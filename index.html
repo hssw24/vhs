@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Warum sich das Zuleitungskabel verdrillt</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Architects+Daughter&family=Nunito+Sans:wght@400;600;700;800&display=swap');
+
+  :root{
+    --board:#1c2e28;
+    --board-edge:#132019;
+    --chalk:#f2efe4;
+    --chalk-dim:#c8cbc0;
+    --copper:#e0a45f;
+    --copper-dim:#a97a45;
+    --teal:#7ec9a8;
+    --warn:#e2794f;
+  }
+
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+
+  html,body{
+    margin:0; padding:0;
+    background:var(--board-edge);
+    color:var(--chalk);
+    font-family:'Nunito Sans', -apple-system, system-ui, sans-serif;
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+  }
+
+  .page{
+    width:100%;
+    max-width:460px;
+    padding:env(safe-area-inset-top,18px) 16px calc(env(safe-area-inset-bottom,18px) + 16px);
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+  }
+
+  header{ text-align:center; padding-top:6px; }
+  header h1{
+    font-family:'Architects Daughter', cursive;
+    font-weight:400;
+    font-size:1.5rem;
+    line-height:1.25;
+    margin:0 0 4px;
+    color:var(--chalk);
+  }
+  header p{
+    margin:0; font-size:0.85rem; color:var(--chalk-dim); line-height:1.4;
+  }
+
+  .board{
+    position:relative;
+    background:
+      radial-gradient(ellipse at 30% 0%, rgba(255,255,255,0.05), transparent 60%),
+      var(--board);
+    border:2px solid #0e1712;
+    border-radius:14px;
+    box-shadow: inset 0 0 40px rgba(0,0,0,0.35), 0 6px 18px rgba(0,0,0,0.4);
+    overflow:hidden;
+  }
+
+  svg{ display:block; width:100%; height:auto; }
+
+  .readout{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    padding:10px 16px 4px;
+    font-family:'Architects Daughter', cursive;
+  }
+  .readout .count{ font-size:1.6rem; color:var(--copper); }
+  .readout .count small{ font-family:'Nunito Sans',sans-serif; font-size:0.75rem; color:var(--chalk-dim); margin-left:4px; }
+  .readout .flag{ font-size:0.95rem; color:var(--warn); opacity:0; transition:opacity .25s; }
+  .readout .flag.show{ opacity:1; }
+
+  .controls{
+    display:flex;
+    gap:10px;
+  }
+
+  button{
+    flex:1;
+    border:none;
+    border-radius:12px;
+    padding:14px 10px;
+    font-size:0.95rem;
+    font-weight:700;
+    font-family:'Nunito Sans', sans-serif;
+    cursor:pointer;
+    min-height:48px;
+  }
+  #toggleBtn{ background:var(--teal); color:#0e1712; }
+  #toggleBtn:active{ transform:scale(0.97); }
+  #resetBtn{ background:transparent; color:var(--chalk); border:1.5px solid var(--chalk-dim); }
+  #resetBtn:active{ transform:scale(0.97); background:rgba(255,255,255,0.06); }
+
+  .speedRow{
+    display:flex; align-items:center; gap:10px;
+    font-size:0.8rem; color:var(--chalk-dim);
+  }
+  input[type=range]{
+    flex:1; height:32px; -webkit-appearance:none; background:transparent;
+  }
+  input[type=range]::-webkit-slider-runnable-track{
+    height:4px; background:var(--chalk-dim); border-radius:2px;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none; margin-top:-10px;
+    width:24px; height:24px; border-radius:50%;
+    background:var(--copper); border:2px solid var(--board-edge);
+  }
+
+  .explain{
+    font-size:0.85rem; line-height:1.55; color:var(--chalk-dim);
+    background:rgba(255,255,255,0.03);
+    border-left:3px solid var(--copper-dim);
+    padding:12px 14px;
+    border-radius:6px;
+  }
+  .explain b{ color:var(--chalk); }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <h1>Warum sich das Zuleitungskabel verdrillt</h1>
+    <p>Motor ohne Kommutator &mdash; er dreht immer in dieselbe Richtung, also wickeln sich die beiden Adern übereinander auf.</p>
+  </header>
+
+  <div class="board">
+    <svg id="scene" viewBox="0 0 320 460" preserveAspectRatio="xMidYMid meet">
+      <!-- fixed anchor -->
+      <g id="anchor">
+        <rect x="110" y="18" width="100" height="34" rx="6" fill="none" stroke="var(--chalk)" stroke-width="2.5"/>
+        <text x="160" y="40" text-anchor="middle" font-family="Nunito Sans" font-size="12" fill="var(--chalk)">Steckdose (fest)</text>
+      </g>
+
+      <!-- cable drawn dynamically -->
+      <path id="wireA" fill="none" stroke="var(--copper)" stroke-width="3" stroke-linecap="round"/>
+      <path id="wireB" fill="none" stroke="var(--chalk)" stroke-width="3" stroke-linecap="round"/>
+
+      <!-- rotor group, positioned dynamically -->
+      <g id="rotor">
+        <circle r="26" fill="none" stroke="var(--teal)" stroke-width="2.5"/>
+        <line x1="-26" y1="0" x2="26" y2="0" stroke="var(--teal)" stroke-width="2.5"/>
+        <line x1="0" y1="-26" x2="0" y2="26" stroke="var(--teal)" stroke-width="2.5" opacity="0.5"/>
+        <path d="M 18 -18 A 25 25 0 0 1 24 4" fill="none" stroke="var(--teal)" stroke-width="2.5" marker-end="url(#arrowhead)"/>
+      </g>
+      <text id="rotorLabel" text-anchor="middle" font-family="Nunito Sans" font-size="11" fill="var(--chalk-dim)">Motor</text>
+
+      <defs>
+        <marker id="arrowhead" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
+          <path d="M0,0 L8,4 L0,8 z" fill="var(--teal)"/>
+        </marker>
+      </defs>
+    </svg>
+  </div>
+
+  <div class="readout">
+    <div class="count"><span id="turns">0.0</span><small>Umdrehungen aufgewickelt</small></div>
+    <div class="flag" id="flag">&#9888; Kabel stark verdrillt</div>
+  </div>
+
+  <div class="controls">
+    <button id="toggleBtn">Motor starten</button>
+    <button id="resetBtn">Kabel entdrillen</button>
+  </div>
+
+  <div class="speedRow">
+    <span>Drehzahl</span>
+    <input type="range" id="speed" min="0.4" max="3" step="0.1" value="1.2">
+  </div>
+
+  <div class="explain">
+        <b>Warum passiert das nur ohne Kommutator?</b> <br><br>
+    Dreht sich die Spule im Motor mit fest angebrachten Stromleitungskabeln in dieselbe Richtung, dann wickeln sich die beiden Adern bei jeder Umdrehung ein Stück weiter umeinander.<br><br>
+    
+    Nach vielen Umdrehungen wird das Kabel kürzer, straffer und kann auf
+    Dauer brechen &mdash; deshalb benötigt so ein Aufbau entweder einen Schleifkontakt (= Kommutator) oder muss regelmäßig
+    zurückgedreht werden.
+    
+    <!--
+    <b>Warum passiert das nur ohne Kommutator?</b> Ein Kommutator ist ein rotierender Schleifkontakt: Er lässt die
+    Zuleitung fest an der Wand hängen, während sich nur ein Kontaktring mitdreht. Fehlt dieser Trick &mdash; wie bei
+    diesem einfachen Motor oder Ventilatoren mit direkt angelöteten Kabeln &mdash; wickeln sich die beiden Adern bei
+    jeder Umdrehung ein Stück weiter umeinander. Nach vielen Umdrehungen wird das Kabel kürzer, straffer und kann auf
+    Dauer brechen &mdash; deshalb braucht so ein Aufbau entweder einen Schleifkontakt oder muss regelmäßig
+    zurückgedreht werden.-->
+  </div>
+
+</div>
+
+<script>
+(function(){
+  const svg = document.getElementById('scene');
+  const wireA = document.getElementById('wireA');
+  const wireB = document.getElementById('wireB');
+  const rotor = document.getElementById('rotor');
+  const rotorLabel = document.getElementById('rotorLabel');
+  const turnsEl = document.getElementById('turns');
+  const flagEl = document.getElementById('flag');
+  const toggleBtn = document.getElementById('toggleBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  const speedInput = document.getElementById('speed');
+
+  const topY = 58;
+  const baseLength = 300;
+  const minLength = 150;
+  const shortenPerTurn = 6.5;
+  const amplitude = 26;
+  const centerX = 160;
+
+  const maxTurns = 20;
+  let angle = 0;       // radians, total rotor rotation
+  let running = false;
+  let unwinding = false;
+  let capped = false;
+  let lastT = null;
+
+  function currentLength(turns){
+    return Math.max(minLength, baseLength - turns * shortenPerTurn);
+  }
+
+  function buildPath(turns, phaseOffset){
+    const len = currentLength(turns);
+    const pts = [];
+    const N = 48;
+    for(let i=0;i<=N;i++){
+      const s = i/N;
+      const env = Math.sin(Math.PI * s);
+      const x = centerX + amplitude * env * Math.sin(2*Math.PI*turns*s + phaseOffset);
+      const y = topY + s*len;
+      pts.push((i===0?'M':'L') + x.toFixed(1) + ',' + y.toFixed(1));
+    }
+    return { d: pts.join(' '), len: len };
+  }
+
+  function render(){
+    const turns = angle / (2*Math.PI);
+    const absTurns = Math.abs(turns);
+
+    const pa = buildPath(turns, 0);
+    const pb = buildPath(turns, Math.PI);
+    wireA.setAttribute('d', pa.d);
+    wireB.setAttribute('d', pb.d);
+
+    const rotorY = topY + pa.len;
+    rotor.setAttribute('transform', `translate(${centerX},${rotorY}) rotate(${(angle*180/Math.PI)%360})`);
+    rotorLabel.setAttribute('x', centerX);
+    rotorLabel.setAttribute('y', rotorY + 44);
+
+    turnsEl.textContent = absTurns.toFixed(1);
+    if(capped){
+      flagEl.textContent = '⚠ Maximum erreicht – bitte entdrillen';
+      flagEl.classList.add('show');
+    } else {
+      flagEl.textContent = '⚠ Kabel stark verdrillt';
+      flagEl.classList.toggle('show', absTurns > 9);
+    }
+  }
+
+  function step(t){
+    if(lastT===null) lastT = t;
+    const dt = Math.min(0.05, (t-lastT)/1000);
+    lastT = t;
+
+    if(running){
+      const speed = parseFloat(speedInput.value); // turns per second-ish
+      angle += speed * 2*Math.PI * dt;
+      const turnsNow = Math.abs(angle) / (2*Math.PI);
+      if(turnsNow >= maxTurns){
+        angle = Math.sign(angle) * maxTurns * 2*Math.PI;
+        running = false;
+        capped = true;
+        toggleBtn.textContent = 'Maximum erreicht';
+        toggleBtn.disabled = true;
+      }
+    } else if(unwinding){
+      const dir = angle > 0 ? -1 : 1;
+      const step = 6.5 * dt; // rad/s unwind speed
+      if(Math.abs(angle) <= step){
+        angle = 0;
+        unwinding = false;
+      } else {
+        angle += dir*step;
+      }
+    }
+
+    render();
+    requestAnimationFrame(step);
+  }
+
+  toggleBtn.addEventListener('click', function(){
+    if(capped) return;
+    running = !running;
+    unwinding = false;
+    toggleBtn.textContent = running ? 'Motor stoppen' : 'Motor starten';
+  });
+
+  resetBtn.addEventListener('click', function(){
+    running = false;
+    unwinding = true;
+    capped = false;
+    toggleBtn.disabled = false;
+    toggleBtn.textContent = 'Motor starten';
+  });
+
+  render();
+  requestAnimationFrame(step);
+})();
+</script>
+</body>
+</html>
