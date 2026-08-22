@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Induktion: Magnet durch Spule</title>
+<style>
+  :root{
+    --paper:#f6f4ee;
+    --ink:#1c2321;
+    --grid:#d8d3c4;
+    --coil:#8a6b3f;
+    --coil-dark:#5e4726;
+    --north:#b5442e;
+    --south:#2e5fb5;
+    --curve:#1c2321;
+    --accent:#b5442e;
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0;
+    background:#f6f4ee;
+    color:#1c2321;
+    font-family: 'Courier New', ui-monospace, monospace;
+  }
+  body{
+    padding:16px 12px 28px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    -webkit-text-size-adjust:100%;
+  }
+  .wrap{
+    width:100%;
+    max-width:640px;
+  }
+  h1{
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size:20px;
+    font-weight:700;
+    letter-spacing:0.02em;
+    margin:0 0 2px;
+  }
+  .sub{
+    font-size:12px;
+    color:#5c5648;
+    margin:0 0 18px;
+    letter-spacing:0.03em;
+  }
+  .panel{
+    background:#fffdf8;
+    border:1px solid #d8d3c4;
+    border-radius:4px;
+    padding:14px 14px 10px;
+    margin-bottom:14px;
+  }
+  .label-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    color:#7a7461;
+    margin-bottom:6px;
+  }
+  svg{display:block; width:100%; height:auto;}
+  .controls{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-top:12px;
+    flex-wrap:wrap;
+  }
+  .speed-label{
+    font-size:11px;
+    color:#5c5648;
+    min-width:78px;
+    text-align:right;
+  }
+  button{
+    font-family:inherit;
+    font-size:13px;
+    background:#1c2321;
+    color:#f6f4ee;
+    border:none;
+    border-radius:3px;
+    padding:10px 16px;
+    cursor:pointer;
+    letter-spacing:0.03em;
+    min-height:40px;
+    touch-action:manipulation;
+  }
+  button:active{transform:translateY(1px);}
+  input[type=range]{
+    flex:1;
+    accent-color:#b5442e;
+    min-height:32px;
+    touch-action:pan-x;
+  }
+  .speed-label{
+    font-size:11px;
+    color:#5c5648;
+    min-width:78px;
+    text-align:right;
+  }
+  .legend{
+    display:flex;
+    gap:10px 18px;
+    font-size:11px;
+    color:#5c5648;
+    margin-top:10px;
+    flex-wrap:wrap;
+    align-items:center;
+  }
+  .legend span{display:inline-flex; align-items:center; gap:5px;}
+  .dot{width:9px;height:9px;border-radius:50%;display:inline-block;flex-shrink:0;}
+  .note{
+    font-size:11.5px;
+    line-height:1.55;
+    color:#3d3a30;
+    margin-top:4px;
+  }
+  .phase-tag{
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:0.05em;
+    padding:3px 9px;
+    border-radius:12px;
+    background:#eee9d9;
+    color:#5c5648;
+  }
+
+  @media (max-width: 400px){
+    .wrap{ max-width:100%; }
+    h1{ font-size:17px; }
+    .panel{ padding:12px 10px 8px; }
+    .controls{ gap:8px; }
+    .speed-label{ min-width:100%; text-align:left; order:3; }
+    .legend{ font-size:10.5px; gap:8px 14px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Induktion beim Durchschieben eines Stabmagneten</h1>
+  <p class="sub">U = −N · dΦ/dt — animierte Skizze, Geschwindigkeit einstellbar</p>
+
+  <div class="panel">
+    <div class="label-row">
+      <span>Spule &amp; Magnet</span>
+      <span class="phase-tag" id="phaseTag">Start</span>
+    </div>
+    <svg id="topSvg" viewBox="0 0 600 180" width="600" height="180" preserveAspectRatio="xMidYMid meet"></svg>
+  </div>
+
+  <div class="panel">
+    <div class="label-row">
+      <span>Induzierte Spannung U(t)</span>
+      <span id="uReadout">U = 0</span>
+    </div>
+    <svg id="graphSvg" viewBox="0 0 600 220" width="600" height="220" preserveAspectRatio="xMidYMid meet"></svg>
+    <div class="legend">
+      <span><span class="dot" style="background:#b5442e"></span> <span id="poleLegendLabel">Nordpol voraus</span></span>
+      <span><span class="dot" style="background:#1c2321"></span> U(t)</span>
+      <span><span class="dot" style="background:#b5442e"></span> aktuelle Position</span>
+    </div>
+    <button id="poleBtn" style="width:100%; margin-top:10px;">⇄ Pole umdrehen</button>
+  </div>
+
+  <div class="panel">
+    <div class="controls">
+      <button id="playBtn">▶ Start</button>
+      <input type="range" id="speedSlider" min="1" max="3" step="0.01" value="1">
+      <span class="speed-label" id="speedLabel">konstant</span>
+    </div>
+    <div class="controls" style="margin-top:8px;">
+      <label style="font-size:11px;color:#5c5648;">Position manuell:</label>
+      <input type="range" id="posSlider" min="-80" max="680" step="2" value="-80" style="flex:1;">
+    </div>
+    <p class="note" id="explainText">Der Magnet nähert sich von links. Ziehe den Positions‑Regler oder drücke Start.</p>
+  </div>
+</div>
+
+<script>
+// ---------- Model ----------
+// WICHTIG: Diese Werte sind jetzt dieselben Pixel-Koordinaten wie die Spule
+// in der Zeichnung (siehe coilPxStart/coilPxEnd weiter unten) - nur so
+// laufen Magnetposition und U(t)-Kurve synchron.
+const coilStart = 230, coilEnd = 370, coilCenter = (coilStart+coilEnd)/2; // = 300
+
+// polarity: +1 = Nordpol voraus (Standard), -1 = Südpol voraus (gespiegelt)
+let polarity = 1;
+
+function flux(pos){
+  // bump/glockenkurve: Fluss ist 0 weit weg, maximal wenn Magnet mittig sitzt,
+  // wieder 0 nachdem er die Spule verlassen hat. NICHT monoton (kein Sigmoid) -
+  // sonst hat die Spannung nur einen Peak statt Eintritt/Austritt-Doppelspitze.
+  const x = (pos - coilCenter) / 45;
+  return polarity * (1 / (1 + x*x)); // Lorentz-Glocke, Vorzeichen je nach Polung
+}
+
+// derivative for instantaneous voltage sign/shape - computed numerically during animation
+
+// ---------- SVG setup: top diagram ----------
+const topSvg = document.getElementById('topSvg');
+const NS = "http://www.w3.org/2000/svg";
+function el(tag, attrs){
+  const e = document.createElementNS(NS, tag);
+  for(const k in attrs) e.setAttribute(k, attrs[k]);
+  return e;
+}
+
+// axis track
+topSvg.appendChild(el('line',{x1:10,y1:75,x2:590,y2:75,stroke:'#cfc9b8',"stroke-width":1,"stroke-dasharray":"3,4"}));
+
+// coil (drawn as loops)
+const coilGroup = el('g',{});
+const coilPxStart = 230, coilPxEnd = 370, coilY = 75, coilR = 34;
+const nLoops = 7;
+for(let i=0;i<nLoops;i++){
+  const x = coilPxStart + i*((coilPxEnd-coilPxStart)/(nLoops-1));
+  const loop = el('ellipse',{cx:x, cy:coilY, rx:10, ry:coilR, fill:'none', stroke:'#8a6b3f', 'stroke-width':3});
+  coilGroup.appendChild(loop);
+}
+// coil core rectangle (subtle) behind
+topSvg.appendChild(el('rect',{x:coilPxStart-4,y:coilY-coilR,width:coilPxEnd-coilPxStart+8,height:coilR*2,fill:'#eee6cf',opacity:'0.35',rx:4}));
+topSvg.appendChild(coilGroup);
+
+// coil label + wire leads to a little "meter"
+topSvg.appendChild(el('path',{d:`M ${coilPxStart} ${coilY-coilR} C ${coilPxStart-40} ${coilY-coilR}, ${coilPxStart-40} ${20}, ${coilPxStart-70} 20`, fill:'none', stroke:'#5e4726', 'stroke-width':2.5}));
+topSvg.appendChild(el('path',{d:`M ${coilPxEnd} ${coilY-coilR} C ${coilPxEnd+40} ${coilY-coilR}, ${coilPxEnd+40} ${20}, ${coilPxEnd+70} 20`, fill:'none', stroke:'#5e4726', 'stroke-width':2.5}));
+// meter circle
+const meterCx = 300, meterCy=20;
+topSvg.appendChild(el('circle',{cx:meterCx,cy:meterCy,r:16,fill:'#fffdf8',stroke:'#1c2321','stroke-width':1.5}));
+const meterNeedle = el('line',{x1:meterCx,y1:meterCy,x2:meterCx,y2:meterCy-10,stroke:'#b5442e','stroke-width':2,'stroke-linecap':'round'});
+topSvg.appendChild(meterNeedle);
+topSvg.appendChild(el('text',{x:meterCx,y:meterCy+30,'text-anchor':'middle','font-size':10,fill:'#7a7461'},)).textContent='U';
+
+// "+"/"-" Labels direkt an den Spulenenden (oben, wo die Wicklung in die Zuleitung übergeht)
+const coilLeftChargeLabel = el('text',{x:coilPxStart-14, y:coilY-coilR-6, 'text-anchor':'middle', 'font-size':15, 'font-weight':'700', fill:'#b5442e', opacity:0});
+topSvg.appendChild(coilLeftChargeLabel);
+const coilRightChargeLabel = el('text',{x:coilPxEnd+14, y:coilY-coilR-6, 'text-anchor':'middle', 'font-size':15, 'font-weight':'700', fill:'#b5442e', opacity:0});
+topSvg.appendChild(coilRightChargeLabel);
+
+// magnet group
+const magnetGroup = el('g',{});
+const magW = 90, magH = 20;
+const nRect = el('rect',{x:0,y:coilY-magH/2,width:magW/2,height:magH, fill:'#b5442e'});
+const sRect = el('rect',{x:magW/2,y:coilY-magH/2,width:magW/2,height:magH, fill:'#2e5fb5'});
+const magOutline = el('rect',{x:0,y:coilY-magH/2,width:magW,height:magH, fill:'none', stroke:'#1c2321','stroke-width':1.5});
+const nLabel = el('text',{x:magW*0.25,y:coilY+4,'text-anchor':'middle','font-size':12,'font-weight':'700',fill:'#fff'});
+nLabel.textContent='N';
+const sLabel = el('text',{x:magW*0.75,y:coilY+4,'text-anchor':'middle','font-size':12,'font-weight':'700',fill:'#fff'});
+sLabel.textContent='S';
+magnetGroup.appendChild(nRect);
+magnetGroup.appendChild(sRect);
+magnetGroup.appendChild(magOutline);
+magnetGroup.appendChild(nLabel);
+magnetGroup.appendChild(sLabel);
+topSvg.appendChild(magnetGroup);
+
+// Bewegungsrichtung ist immer links->rechts. Bei polarity=1 läuft der Nordpol
+// (links, rot) voraus; bei polarity=-1 wird der Magnet gedreht: Südpol links.
+function updateMagnetPolarity(){
+  if(polarity === 1){
+    nRect.setAttribute('x', 0); nRect.setAttribute('fill','#b5442e');
+    sRect.setAttribute('x', magW/2); sRect.setAttribute('fill','#2e5fb5');
+    nLabel.setAttribute('x', magW*0.25);
+    sLabel.setAttribute('x', magW*0.75);
+  } else {
+    nRect.setAttribute('x', magW/2); // N jetzt rechts (hinten)
+    sRect.setAttribute('x', 0); // S jetzt links (voraus)
+    nLabel.setAttribute('x', magW*0.75);
+    sLabel.setAttribute('x', magW*0.25);
+  }
+}
+
+// arrow showing motion direction
+topSvg.appendChild(el('path',{d:'M 500 75 L 540 75 M 530 68 L 540 75 L 530 82', stroke:'#a39c86','stroke-width':2, fill:'none'}));
+const dirText = el('text',{x:520,y:100,'text-anchor':'middle','font-size':10,fill:'#a39c86'});
+dirText.textContent='Bewegungsrichtung';
+topSvg.appendChild(dirText);
+
+// ---- Elektronen im offenen Spulendraht ----
+// Zeigt, dass bei offenem Kreis KEIN Dauerstrom fließt, sondern die
+// Elektronen nur kurz zu einem Ende hin verschoben werden (Ladungstrennung).
+const eRowY = 145;
+topSvg.appendChild(el('text',{x:(coilPxStart+coilPxEnd)/2, y:130, 'text-anchor':'middle', 'font-size':9, fill:'#7a7461'})).textContent = 'Elektronen im Spulendraht (offen)';
+
+// Draht-Segment mit offenen Enden (kleine Kreise = nicht verbunden)
+topSvg.appendChild(el('line',{x1:coilPxStart, y1:eRowY, x2:coilPxEnd, y2:eRowY, stroke:'#5e4726', 'stroke-width':2}));
+topSvg.appendChild(el('circle',{cx:coilPxStart, cy:eRowY, r:4, fill:'none', stroke:'#5e4726', 'stroke-width':1.5}));
+topSvg.appendChild(el('circle',{cx:coilPxEnd, cy:eRowY, r:4, fill:'none', stroke:'#5e4726', 'stroke-width':1.5}));
+
+// Ladungs-Label an den offenen Enden (Überschuss/Mangel je nach Verschiebung)
+const leftChargeLabel = el('text',{x:coilPxStart-16, y:eRowY+4, 'text-anchor':'middle', 'font-size':13, 'font-weight':'700', fill:'#b5442e', opacity:0});
+topSvg.appendChild(leftChargeLabel);
+const rightChargeLabel = el('text',{x:coilPxEnd+16, y:eRowY+4, 'text-anchor':'middle', 'font-size':13, 'font-weight':'700', fill:'#b5442e', opacity:0});
+topSvg.appendChild(rightChargeLabel);
+
+// Drift-Pfeil oberhalb der Elektronenreihe (zeigt Richtung der Verschiebung)
+const arrowGroup = el('g',{opacity:0});
+arrowGroup.appendChild(el('path',{d:'M -14 0 L 14 0 M 7 -6 L 14 0 L 7 6', stroke:'#b5442e', 'stroke-width':1.8, fill:'none'}));
+topSvg.appendChild(arrowGroup);
+
+// Elektronen als kleine e⁻-Punkte, gleichmäßig verteilt im Ruhezustand
+const nElectrons = 9;
+const electronMargin = 16;
+const electronBaseXs = [];
+for(let i=0;i<nElectrons;i++){
+  electronBaseXs.push(coilPxStart + electronMargin + i*((coilPxEnd-coilPxStart-2*electronMargin)/(nElectrons-1)));
+}
+const electronCircles = electronBaseXs.map(x=>{
+  const c = el('circle',{cx:x, cy:eRowY, r:4.5, fill:'#2e5fb5'});
+  topSvg.appendChild(c);
+  return c;
+});
+
+function updateElectrons(u, maxU){
+  const norm = maxU ? Math.max(-1, Math.min(1, u/maxU)) : 0;
+  const shift = norm * 16;
+  electronCircles.forEach((c,i)=> c.setAttribute('cx', electronBaseXs[i] + shift));
+
+  if(Math.abs(norm) > 0.05){
+    arrowGroup.setAttribute('opacity', 1);
+    arrowGroup.setAttribute('transform', `translate(${(coilPxStart+coilPxEnd)/2},128) scale(${norm>0?1:-1},1)`);
+  } else {
+    arrowGroup.setAttribute('opacity', 0);
+  }
+
+  const chargeOpacity = Math.min(1, Math.abs(norm)*1.3);
+  if(norm > 0.03){
+    leftChargeLabel.textContent='+'; leftChargeLabel.setAttribute('opacity', chargeOpacity);
+    rightChargeLabel.textContent='−'; rightChargeLabel.setAttribute('opacity', chargeOpacity);
+    coilLeftChargeLabel.textContent='+'; coilLeftChargeLabel.setAttribute('opacity', chargeOpacity);
+    coilRightChargeLabel.textContent='−'; coilRightChargeLabel.setAttribute('opacity', chargeOpacity);
+  } else if(norm < -0.03){
+    leftChargeLabel.textContent='−'; leftChargeLabel.setAttribute('opacity', chargeOpacity);
+    rightChargeLabel.textContent='+'; rightChargeLabel.setAttribute('opacity', chargeOpacity);
+    coilLeftChargeLabel.textContent='−'; coilLeftChargeLabel.setAttribute('opacity', chargeOpacity);
+    coilRightChargeLabel.textContent='+'; coilRightChargeLabel.setAttribute('opacity', chargeOpacity);
+  } else {
+    leftChargeLabel.setAttribute('opacity',0);
+    rightChargeLabel.setAttribute('opacity',0);
+    coilLeftChargeLabel.setAttribute('opacity',0);
+    coilRightChargeLabel.setAttribute('opacity',0);
+  }
+}
+
+topSvg.appendChild(el('text',{x:300, y:170, 'text-anchor':'middle', 'font-size':8.5, fill:'#a39c86'})).textContent = 'offene Spule → kein Dauerstrom, nur kurzzeitige Ladungsverschiebung';
+
+// pos IST jetzt bereits die Pixel-x-Koordinate (identisch zum Koordinatensystem
+// der Spule/Zeichnung) - keine zweite, abweichende Skala mehr nötig.
+function posToPx(pos){
+  return pos;
+}
+
+function updateMagnet(pos){
+  const cx = posToPx(pos);
+  magnetGroup.setAttribute('transform', `translate(${cx - magW/2}, 0)`);
+}
+
+// ---------- Graph setup ----------
+const graphSvg = document.getElementById('graphSvg');
+const gW = 600, gH = 220, gPad = {l:40,r:16,t:16,b:30};
+const plotW = gW - gPad.l - gPad.r, plotH = gH - gPad.t - gPad.b;
+const zeroY = gPad.t + plotH/2;
+
+// axes
+graphSvg.appendChild(el('line',{x1:gPad.l,y1:zeroY,x2:gW-gPad.r,y2:zeroY,stroke:'#cfc9b8','stroke-width':1}));
+graphSvg.appendChild(el('line',{x1:gPad.l,y1:gPad.t,x2:gPad.l,y2:gH-gPad.b,stroke:'#cfc9b8','stroke-width':1}));
+const yLabelTop = el('text',{x:gPad.l-8,y:gPad.t+8,'text-anchor':'end','font-size':10,fill:'#7a7461'}); yLabelTop.textContent='+';
+const yLabelBot = el('text',{x:gPad.l-8,y:gH-gPad.b,'text-anchor':'end','font-size':10,fill:'#7a7461'}); yLabelBot.textContent='−';
+graphSvg.appendChild(yLabelTop); graphSvg.appendChild(yLabelBot);
+const xLabel = el('text',{x:gW-gPad.r,y:gH-8,'text-anchor':'end','font-size':10,fill:'#7a7461'}); xLabel.textContent='t →';
+graphSvg.appendChild(xLabel);
+
+// precompute U(pos) curve shape for constant-speed reference (derivative of flux wrt pos)
+function derivFlux(pos){
+  const h = 0.4;
+  return (flux(pos+h) - flux(pos-h)) / (2*h);
+}
+// sample across pos range to know max amplitude for scaling
+const totalPosRange = 760;
+let maxAbsDeriv = 0;
+for(let p=-80;p<=680;p+=2){
+  maxAbsDeriv = Math.max(maxAbsDeriv, Math.abs(derivFlux(p)));
+}
+
+// static reference curve (constant velocity case) drawn light
+function buildRefPath(){
+  let path = 'M';
+  for(let i=0;i<=200;i++){
+    const pos = -80 + (i/200)*totalPosRange;
+    const u = derivFlux(pos); // Eintritt (Φ steigt) -> U>0, Austritt (Φ fällt) -> U<0
+    const x = gPad.l + (i/200)*plotW;
+    const y = zeroY - (u/maxAbsDeriv) * (plotH/2*0.85);
+    path += `${i===0?'':' L'} ${x.toFixed(1)} ${y.toFixed(1)}`;
+  }
+  return path;
+}
+const refCurve = el('path',{d:buildRefPath(), fill:'none', stroke:'#1c2321','stroke-width':2});
+graphSvg.appendChild(refCurve);
+
+// moving marker on graph
+const marker = el('circle',{r:5, fill:'#b5442e', stroke:'#fff','stroke-width':1.5});
+graphSvg.appendChild(marker);
+const markerLine = el('line',{stroke:'#b5442e','stroke-width':1,'stroke-dasharray':'2,3', opacity:0.6});
+graphSvg.appendChild(markerLine);
+
+function updateGraph(pos){
+  const t = (pos - (-80)) / totalPosRange;
+  const x = gPad.l + t*plotW;
+  const u = derivFlux(pos);
+  const y = zeroY - (u/maxAbsDeriv) * (plotH/2*0.85);
+  marker.setAttribute('cx', x);
+  marker.setAttribute('cy', y);
+  markerLine.setAttribute('x1', x);
+  markerLine.setAttribute('x2', x);
+  markerLine.setAttribute('y1', zeroY);
+  markerLine.setAttribute('y2', y);
+
+  // meter needle deflection
+  const angle = Math.max(-60, Math.min(60, (u/maxAbsDeriv) * 60));
+  const rad = angle * Math.PI/180;
+  const nx = meterCx + 10*Math.sin(rad);
+  const ny = meterCy - 10*Math.cos(rad);
+  meterNeedle.setAttribute('x2', nx);
+  meterNeedle.setAttribute('y2', ny);
+
+  document.getElementById('uReadout').textContent = 'U = ' + (u>=0?'+':'') + u.toFixed(2) + ' (rel.)';
+  updateElectrons(u, maxAbsDeriv);
+
+  // phase tag + explanation
+  let phase, explain;
+  if(pos < coilStart - 60){
+    phase = 'Anflug'; explain = 'Der Magnet ist noch außerhalb der Spule — kein Fluss, keine Spannung.';
+  } else if(pos < coilCenter - 10){
+    phase = 'Eintritt'; explain = `Der Fluss nimmt zu → ${polarity===1?'positive':'negative'} Spannungsspitze.`;
+  } else if(pos < coilCenter + 10){
+    phase = 'Mitte'; explain = 'Magnet mittig in der Spule: Fluss maximal, aber momentan konstant → U = 0 (Nulldurchgang).';
+  } else if(pos < coilEnd + 60){
+    phase = 'Austritt'; explain = `Der Fluss nimmt wieder ab → ${polarity===1?'negative':'positive'} Spannungsspitze (Umpolung!).`;
+  } else {
+    phase = 'Danach'; explain = 'Magnet komplett durch — Fluss wieder null, keine Spannung mehr.';
+  }
+  document.getElementById('phaseTag').textContent = phase;
+  document.getElementById('explainText').textContent = explain;
+}
+
+// ---------- interaction ----------
+const posSlider = document.getElementById('posSlider');
+const speedSlider = document.getElementById('speedSlider');
+const speedLabel = document.getElementById('speedLabel');
+const playBtn = document.getElementById('playBtn');
+const poleBtn = document.getElementById('poleBtn');
+const poleLegendLabel = document.getElementById('poleLegendLabel');
+
+poleBtn.addEventListener('click', ()=>{
+  polarity *= -1;
+  updateMagnetPolarity();
+  poleLegendLabel.textContent = polarity === 1 ? 'Nordpol voraus' : 'Südpol voraus';
+  refCurve.setAttribute('d', buildRefPath()); // Kurve neu berechnen -> spiegelt sich
+  render(parseFloat(posSlider.value));
+});
+updateMagnetPolarity();
+
+function render(pos){
+  updateMagnet(pos);
+  updateGraph(pos);
+}
+render(parseFloat(posSlider.value));
+
+posSlider.addEventListener('input', ()=>{
+  stopAnim();
+  render(parseFloat(posSlider.value));
+});
+
+speedSlider.addEventListener('input', ()=>{
+  const v = parseFloat(speedSlider.value);
+  if(v < 1.4) speedLabel.textContent = 'langsam & konstant';
+  else if(v < 2.2) speedLabel.textContent = 'mittel';
+  else speedLabel.textContent = 'schnell (beschleunigt)';
+});
+
+let animId = null;
+let animPos = -80;
+let running = false;
+
+function stopAnim(){
+  running = false;
+  playBtn.textContent = '▶ Start';
+  if(animId) cancelAnimationFrame(animId);
+}
+
+playBtn.addEventListener('click', ()=>{
+  if(running){ stopAnim(); return; }
+  running = true;
+  playBtn.textContent = '❚❚ Stop';
+  if(animPos >= 679) animPos = -80;
+  let last = performance.now();
+  const baseSpeed = 130; // px/s bei slider=1, angepasst an größeren Bewegungsbereich
+  function accelFactor(pos){
+    // simulate falling-through acceleration: speed increases with position
+    const speedMode = parseFloat(speedSlider.value);
+    if(speedMode <= 1.05) return 1;
+    // interpolate acceleration strength with slider 1..3
+    const accelStrength = (speedMode - 1) / 2; // 0..1
+    const progress = (pos - (-80))/760;
+    return 1 + accelStrength * (progress*2.2);
+  }
+  
+    function step(now) {
+    if (!running) return;
+    const dt = (now - last) / 1000;
+    last = now;
+    const speedMode = parseFloat(speedSlider.value);
+    const v = baseSpeed * Math.max(1, speedMode) * 0.6 * accelFactor(animPos);
+    animPos += v * dt * 0.35;
+    if (animPos >= 680) {
+      animPos = 680;
+      posSlider.value = animPos;
+      render(animPos);
+      stopAnim();
+      return;
+    }
+    posSlider.value = animPos;
+    render(animPos);
+    animId = requestAnimationFrame(step);
+  }
+  animId = requestAnimationFrame(step);
+  });
+  </script> <
+  /body> <
+  /html>
