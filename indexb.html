@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+
+    <!-- Optimale Darstellung auf Handys -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Meine Buttonmatrix</title>
+
+    <style>
+        /* Grundeinstellungen */
+        body {
+            margin: 0;
+            padding: 15px;
+            font-family: Arial, sans-serif;
+            background: #f2f2f2;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        /* BUTTONMATRIX */
+        #buttonMatrix {
+            display: grid;
+            grid-template-columns:
+                repeat(auto-fit, minmax(140px, 1fr));
+
+            gap: 12px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        /* Button */
+        .matrixButton {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            min-height: 60px;
+            padding: 10px;
+
+            background: #1976d2;
+            color: white;
+
+            border: none;
+            border-radius: 10px;
+
+            font-size: 17px;
+            font-weight: bold;
+
+            cursor: pointer;
+            user-select: none;
+
+            transition: transform 0.1s, opacity 0.1s;
+        }
+
+        .matrixButton:active {
+            transform: scale(0.96);
+            opacity: 0.8;
+        }
+
+        /*
+         * BILDER
+         *
+         * Das Bild darf niemals breiter als der
+         * Bildschirm bzw. sein Container werden.
+         */
+        .buttonImage {
+            display: block;
+
+            max-width: 100%;
+            width: auto;
+            height: auto;
+
+            margin: 15px auto 0 auto;
+
+            border-radius: 8px;
+        }
+
+        /*
+         * Container für Button + Bild
+         */
+        .buttonContainer {
+            text-align: center;
+        }
+
+        /*
+         * Sehr kleine Handys
+         */
+        @media (max-width: 400px) {
+
+            body {
+                padding: 10px;
+            }
+
+            #buttonMatrix {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+
+            .matrixButton {
+                min-height: 55px;
+                font-size: 15px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Meine Links</h1>
+
+    <!-- Hier werden die Buttons und Bilder eingefügt -->
+    <div id="buttonMatrix"></div>
+
+
+    <script>
+
+        /*
+         * =====================================================
+         * HIER DIE BUTTONS UND BILDER BEARBEITEN
+         * =====================================================
+         *
+         * text  = Beschriftung
+         *
+         * link  = Seite, die beim Anklicken geöffnet wird
+         *
+         * image = Bild, das unter dem Button angezeigt wird
+         *
+         * Wenn kein Bild gewünscht ist:
+         * image: ""
+         */
+
+        const buttons = [
+
+            {
+                text: "1 Elektromotor ohne Kommutator",
+                link: "https://vhs-sepia.vercel.app/emo.html",
+                image: ""
+            },
+
+            {
+                text: "YouTube",
+                link: "https://www.youtube.com",
+                image: ""
+            },
+
+            {
+                text: "1 Elektromotor ohne Kommutator",
+                link: "",
+                image: "emok1.jpg"
+            },
+
+            {
+                text: "Bild 2",
+                link: "https://www.beispiel.de",
+                image: "bilder/bild2.jpg"
+            },
+
+            {
+                text: "Bild 3",
+                link: "https://www.beispiel.de",
+                image: "https://www.beispiel.de/bild3.jpg"
+            }
+
+        ];
+
+
+        /*
+         * =====================================================
+         * AB HIER NICHTS MEHR ÄNDERN
+         * =====================================================
+         */
+
+        const matrix = document.getElementById("buttonMatrix");
+
+
+        /*
+         * Buttons und Bilder automatisch erzeugen
+         */
+        buttons.forEach(button => {
+
+            // Container für Button und Bild
+            const container = document.createElement("div");
+            container.className = "buttonContainer";
+
+
+            // Button erstellen
+            const element = document.createElement("button");
+
+            element.textContent = button.text;
+            element.className = "matrixButton";
+
+
+            // Link öffnen
+            element.addEventListener("click", () => {
+                window.location.href = button.link;
+            });
+
+
+            container.appendChild(element);
+
+
+            /*
+             * Nur wenn ein Bild angegeben wurde,
+             * wird auch ein Bild erzeugt.
+             */
+            if (button.image !== "") {
+
+                const image = document.createElement("img");
+
+                image.src = button.image;
+                image.className = "buttonImage";
+
+                /*
+                 * Verhindert, dass ein sehr großes Bild
+                 * breiter als der Bildschirm wird.
+                 */
+                image.alt = button.text;
+
+                container.appendChild(image);
+            }
+
+
+            // Alles in die Matrix einfügen
+            matrix.appendChild(container);
+
+        });
+
+    </script>
+
+</body>
+</html>

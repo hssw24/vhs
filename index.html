@@ -3,38 +3,41 @@
 <head>
     <meta charset="UTF-8">
 
-    <!-- Wichtig für die optimale Darstellung auf Handys -->
+    <!-- Optimale Darstellung auf Handy -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Meine Buttonmatrix</title>
+    <title>Buttonmatrix</title>
 
     <style>
-        /* Grundlegende Seiteneinstellungen */
+
+        /* =====================================================
+           GRUNDEINSTELLUNGEN
+           ===================================================== */
+
         body {
             margin: 0;
-            padding: 20px;
+            padding: 15px;
             font-family: Arial, sans-serif;
             background: #f2f2f2;
         }
 
-        /* Überschrift */
         h1 {
             text-align: center;
             margin-bottom: 20px;
         }
 
-        /*
-         * BUTTONMATRIX
-         *
-         * auto-fit sorgt dafür, dass sich die Anzahl
-         * der Spalten automatisch an die Bildschirmbreite
-         * anpasst.
-         */
+
+        /* =====================================================
+           BUTTONMATRIX
+           ===================================================== */
+
         #buttonMatrix {
             display: grid;
 
-            /* Auf großen Bildschirmen mehrere Spalten,
-               auf kleinen Bildschirmen entsprechend weniger */
+            /*
+             * Die Anzahl der Spalten passt sich
+             * automatisch an die Bildschirmbreite an.
+             */
             grid-template-columns:
                 repeat(auto-fit, minmax(140px, 1fr));
 
@@ -44,179 +47,438 @@
             margin: 0 auto;
         }
 
-        /* Aussehen der Buttons */
+
+        /* =====================================================
+           BUTTON
+           ===================================================== */
+
         .matrixButton {
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            position: relative;
 
-            min-height: 60px;
-            padding: 10px;
+            width: 100%;
+            min-height: 80px;
 
-            background: #1976d2;
-            color: white;
+            padding: 0;
 
-            border: none;
+            background: white;
+            color: #222;
+
+            border: 2px solid #1976d2;
             border-radius: 10px;
 
-            font-size: 17px;
-            font-weight: bold;
+            overflow: hidden;
 
             cursor: pointer;
 
-            /* Verhindert, dass Text ausgewählt wird */
-            user-select: none;
-
-            /* Kleine Animation */
-            transition: transform 0.1s, opacity 0.1s;
+            transition: transform 0.1s;
         }
 
-        /* Effekt beim Antippen */
         .matrixButton:active {
             transform: scale(0.96);
-            opacity: 0.8;
         }
 
-        /*
-         * Zusätzliche Anpassung für sehr kleine Handys
-         */
+
+        /* =====================================================
+           BILDER AUF DEN BUTTONS
+           ===================================================== */
+
+        .buttonImage {
+            display: block;
+
+            width: 100%;
+            height: auto;
+
+            /*
+             * Das Bild passt sich automatisch
+             * an die Buttonbreite an.
+             */
+        }
+
+
+        /* Beschriftung unter dem Bild */
+        .buttonText {
+            display: block;
+
+            padding: 10px;
+
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+
+        /* =====================================================
+           VOLLbild-OVERLAY
+           ===================================================== */
+
+        #imageOverlay {
+
+            /* zunächst unsichtbar */
+            display: none;
+
+            /*
+             * Überdeckt den kompletten Bildschirm
+             */
+            position: fixed;
+
+            left: 0;
+            top: 0;
+
+            width: 100vw;
+            height: 100vh;
+
+            background: rgba(0, 0, 0, 0.92);
+
+            /*
+             * Bild und Schließen-Button
+             * über allem anderen anzeigen
+             */
+            z-index: 9999;
+
+            /*
+             * Bild mittig platzieren
+             */
+            align-items: center;
+            justify-content: center;
+
+            padding: 10px;
+
+            box-sizing: border-box;
+        }
+
+
+        /* =====================================================
+           VERGRÖSSERTES BILD
+           ===================================================== */
+
+        #fullImage {
+
+            /*
+             * Das Bild darf maximal die
+             * Bildschirmgröße einnehmen.
+             */
+            max-width: 100%;
+            max-height: 100%;
+
+            width: auto;
+            height: auto;
+
+            object-fit: contain;
+        }
+
+
+        /* =====================================================
+           SCHLIESSEN-BUTTON
+           ===================================================== */
+
+        #closeButton {
+
+            position: absolute;
+
+            top: 10px;
+            right: 15px;
+
+            width: 45px;
+            height: 45px;
+
+            border: none;
+            border-radius: 50%;
+
+            background: rgba(255, 255, 255, 0.85);
+
+            color: #222;
+
+            font-size: 30px;
+            line-height: 45px;
+
+            cursor: pointer;
+
+            z-index: 10000;
+        }
+
+
+        /* =====================================================
+           KLEINE HANDYS
+           ===================================================== */
+
         @media (max-width: 400px) {
 
             body {
-                padding: 12px;
+                padding: 10px;
             }
 
             #buttonMatrix {
                 grid-template-columns: repeat(2, 1fr);
-                gap: 10px;
+                gap: 8px;
             }
 
-            .matrixButton {
-                min-height: 55px;
-                font-size: 15px;
+            .buttonText {
+                font-size: 14px;
+                padding: 8px;
             }
+
         }
+
     </style>
 </head>
 
+
 <body>
 
-    <h1>VHS Hameln-Pyrmont</h1>
+    <h1>Meine Buttonmatrix</h1>
 
-    <!--
-        Hier werden die Buttons automatisch erzeugt.
-        Du musst diesen Bereich normalerweise NICHT verändern.
-    -->
+
+    <!-- =====================================================
+         BUTTONMATRIX
+
+         Die Buttons werden automatisch erzeugt.
+         ===================================================== -->
+
     <div id="buttonMatrix"></div>
+
+
+    <!-- =====================================================
+         VOLLbild-ANSICHT
+
+         Dieser Bereich wird erst beim Antippen eines
+         Bildes sichtbar.
+         ===================================================== -->
+
+    <div id="imageOverlay">
+
+        <!-- Schließen -->
+        <button id="closeButton">&times;</button>
+
+        <!-- Großes Bild -->
+        <img id="fullImage" src="" alt="Vergrößertes Bild">
+
+    </div>
 
 
     <script>
 
-        /*
-         * =====================================================
-         * HIER DIE BUTTONS BEARBEITEN
-         * =====================================================
-         *
-         * "text" = Beschriftung des Buttons
-         *
-         * "link" = Ziel, das beim Anklicken geöffnet wird
-         *
-         * Einen neuen Button kannst du einfach kopieren.
-         */
+
+        /* =====================================================
+           HIER BUTTONS EINTRAGEN / ÄNDERN
+           =====================================================
+
+           text  = Beschriftung des Buttons
+
+           link  = Webseite, die beim normalen Antippen
+                   des Buttons geöffnet wird
+
+           image = Bild, das auf dem Button angezeigt wird
+
+           Wenn kein Bild vorhanden ist:
+           image: ""
+
+           ===================================================== */
 
         const buttons = [
 
             {
-                text: "1 Elektromotor ohne Kommutator",
-                link: "https://vhs-sepia.vercel.app/emo.html"
-            },
-            {
-                text: "2a Elektromotor ohne Kommutator - Abb. 1",
-                link: "./pictures/emok1.jpg"
+                text: "1 Elektromotor ohne Kommutator - Animation",
+                link: "https://vhs-sepia.vercel.app/emo.html",
+                image: ""
             },
 
             {
-                text: "2b Elektromotor ohne Kommutator - Abb. 2",
-                link: "https://www.beispiel.de"
+                text: "2 Elektromotor ohne Kommutator - Bild 1",
+                link: "https://vhs-sepia.vercel.app/emok1.jpg",
+                image: "https://vhs-sepia.vercel.app/emok1.jpg"
+
             },
 
             {
-                text: "Button 6",
-                link: "https://www.beispiel.de"
-            },
+                text: "2 Elektromotor ohne Kommutator - Bild 2",
+                link: "https://vhs-sepia.vercel.app/emok2.jpg",
+                image: "https://vhs-sepia.vercel.app/emok2.jpg"
 
-
-            {
-                text: "2 Leifi Elektromotor Video",
-                link: "https://youtu.be/jQfOAziIhXU"
             },
 
             {
-                text: "3 Leifi Elektromotor allgemein",
-                link: "https://www.leifiphysik.de/elektrizitaetslehre/kraft-auf-stromleiter-e-motor/grundwissen/elektromotor"
+                text: "Bild 2",
+                link: "https://www.beispiel.de",
+                image: "bilder/bild2.jpg"
             },
 
             {
-                text: "4 Elektromotor simplexy, Video, auch gut",
-                link: "https://youtu.be/CGzLvrkKYKI"
+                text: "Bild 3",
+                link: "https://www.beispiel.de",
+                image: "bilder/bild3.jpg"
             },
 
             {
-                text: "Button 6",
-                link: "https://www.beispiel.de"
-            },
-
-            {
-                text: "Button 7",
-                link: "https://www.beispiel.de"
-            },
-
-            {
-                text: "Telegram",
-                link: "https://web.telegram.org/a/"
-            },
-            
-            {
-                text: "Generator: Elektromagnetische Induktion (Faraday)",
-                link: "https://www.beispiel.de"
+                text: "YouTube",
+                link: "https://www.youtube.com",
+                image: ""
             }
-
 
         ];
 
 
-        /*
-         * =====================================================
-         * AB HIER NICHTS MEHR ÄNDERN
-         * =====================================================
-         */
+        /* =====================================================
+           ELEMENTE AUS HTML HOLEN
+           ===================================================== */
 
-        const matrix = document.getElementById("buttonMatrix");
+        const matrix =
+            document.getElementById("buttonMatrix");
+
+        const overlay =
+            document.getElementById("imageOverlay");
+
+        const fullImage =
+            document.getElementById("fullImage");
+
+        const closeButton =
+            document.getElementById("closeButton");
 
 
-        /*
-         * Für jeden Eintrag im buttons-Array
-         * wird automatisch ein Button erstellt.
-         */
+        /* =====================================================
+           BUTTONS ERZEUGEN
+           ===================================================== */
+
         buttons.forEach(button => {
 
-            const element = document.createElement("button");
+            /*
+             * Button erstellen
+             */
+            const element =
+                document.createElement("button");
 
-            // Beschriftung
-            element.textContent = button.text;
-
-            // CSS-Klasse
             element.className = "matrixButton";
 
-            // Link beim Anklicken öffnen
+
+            /*
+             * Wenn ein Bild angegeben wurde,
+             * Bild auf dem Button anzeigen.
+             */
+            if (button.image !== "") {
+
+                const image =
+                    document.createElement("img");
+
+                image.src = button.image;
+
+                image.className =
+                    "buttonImage";
+
+                image.alt = button.text;
+
+
+                /*
+                 * Bild antippen:
+                 * Vollbild öffnen.
+                 */
+                image.addEventListener("click", (event) => {
+
+                    /*
+                     * Verhindert, dass gleichzeitig
+                     * der Button-Link ausgelöst wird.
+                     */
+                    event.stopPropagation();
+
+                    fullImage.src = button.image;
+
+                    overlay.style.display = "flex";
+
+                });
+
+
+                element.appendChild(image);
+            }
+
+
+            /*
+             * Beschriftung
+             */
+            const text =
+                document.createElement("span");
+
+            text.className = "buttonText";
+
+            text.textContent =
+                button.text;
+
+            element.appendChild(text);
+
+
+            /*
+             * Button anklicken:
+             * Link öffnen.
+             */
             element.addEventListener("click", () => {
-                window.location.href = button.link;
+
+                if (button.link !== "") {
+
+                    window.location.href =
+                        button.link;
+
+                }
+
             });
 
-            // Button in die Matrix einfügen
+
+            /*
+             * Button in Matrix einfügen
+             */
             matrix.appendChild(element);
 
         });
+
+
+        /* =====================================================
+           VOLLbild SCHLIESSEN
+           ===================================================== */
+
+        function closeImage() {
+
+            overlay.style.display = "none";
+
+            /*
+             * Bildquelle löschen.
+             */
+            fullImage.src = "";
+
+        }
+
+
+        /*
+         * X-Button
+         */
+        closeButton.addEventListener(
+            "click",
+            closeImage
+        );
+
+
+        /*
+         * Auch beim Antippen des dunklen Bereichs
+         * wird das Bild geschlossen.
+         */
+        overlay.addEventListener("click", (event) => {
+
+            if (event.target === overlay) {
+
+                closeImage();
+
+            }
+
+        });
+
+
+        /*
+         * ESC-Taste am PC
+         */
+        document.addEventListener("keydown", (event) => {
+
+            if (event.key === "Escape") {
+
+                closeImage();
+
+            }
+
+        });
+
 
     </script>
 

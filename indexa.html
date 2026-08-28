@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+
+    <!-- Wichtig für die optimale Darstellung auf Handys -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Meine Buttonmatrix</title>
+
+    <style>
+        /* Grundlegende Seiteneinstellungen */
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: #f2f2f2;
+        }
+
+        /* Überschrift */
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        /*
+         * BUTTONMATRIX
+         *
+         * auto-fit sorgt dafür, dass sich die Anzahl
+         * der Spalten automatisch an die Bildschirmbreite
+         * anpasst.
+         */
+        #buttonMatrix {
+            display: grid;
+
+            /* Auf großen Bildschirmen mehrere Spalten,
+               auf kleinen Bildschirmen entsprechend weniger */
+            grid-template-columns:
+                repeat(auto-fit, minmax(140px, 1fr));
+
+            gap: 12px;
+
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        /* Aussehen der Buttons */
+        .matrixButton {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            min-height: 60px;
+            padding: 10px;
+
+            background: #1976d2;
+            color: white;
+
+            border: none;
+            border-radius: 10px;
+
+            font-size: 17px;
+            font-weight: bold;
+
+            cursor: pointer;
+
+            /* Verhindert, dass Text ausgewählt wird */
+            user-select: none;
+
+            /* Kleine Animation */
+            transition: transform 0.1s, opacity 0.1s;
+        }
+
+        /* Effekt beim Antippen */
+        .matrixButton:active {
+            transform: scale(0.96);
+            opacity: 0.8;
+        }
+
+        /*
+         * Zusätzliche Anpassung für sehr kleine Handys
+         */
+        @media (max-width: 400px) {
+
+            body {
+                padding: 12px;
+            }
+
+            #buttonMatrix {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+
+            .matrixButton {
+                min-height: 55px;
+                font-size: 15px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>VHS Hameln-Pyrmont</h1>
+
+    <!--
+        Hier werden die Buttons automatisch erzeugt.
+        Du musst diesen Bereich normalerweise NICHT verändern.
+    -->
+    <div id="buttonMatrix"></div>
+
+
+    <script>
+
+        /*
+         * =====================================================
+         * HIER DIE BUTTONS BEARBEITEN
+         * =====================================================
+         *
+         * "text" = Beschriftung des Buttons
+         *
+         * "link" = Ziel, das beim Anklicken geöffnet wird
+         *
+         * Einen neuen Button kannst du einfach kopieren.
+         */
+
+        const buttons = [
+
+            {
+                text: "1 Elektromotor ohne Kommutator",
+                link: "https://vhs-sepia.vercel.app/emo.html"
+            },
+            {
+                text: "2a Elektromotor ohne Kommutator - Abb. 1",
+                link: "https://vhs-sepia.vercel.app/emok1.jpg"
+            },
+
+            {
+                text: "2b Elektromotor ohne Kommutator - Abb. 2",
+                link: "https://www.beispiel.de"
+            },
+
+            {
+                text: "Button 6",
+                link: "https://www.beispiel.de"
+            },
+
+
+            {
+                text: "2 Leifi Elektromotor Video",
+                link: "https://youtu.be/jQfOAziIhXU"
+            },
+
+            {
+                text: "3 Leifi Elektromotor allgemein",
+                link: "https://www.leifiphysik.de/elektrizitaetslehre/kraft-auf-stromleiter-e-motor/grundwissen/elektromotor"
+            },
+
+            {
+                text: "4 Elektromotor simplexy, Video, auch gut",
+                link: "https://youtu.be/CGzLvrkKYKI"
+            },
+
+            {
+                text: "Button 6",
+                link: "https://www.beispiel.de"
+            },
+
+            {
+                text: "Button 7",
+                link: "https://www.beispiel.de"
+            },
+
+            {
+                text: "Telegram",
+                link: "https://web.telegram.org/a/"
+            },
+            
+            {
+                text: "Generator: Elektromagnetische Induktion (Faraday)",
+                link: "https://www.beispiel.de"
+            }
+
+
+        ];
+
+
+        /*
+         * =====================================================
+         * AB HIER NICHTS MEHR ÄNDERN
+         * =====================================================
+         */
+
+        const matrix = document.getElementById("buttonMatrix");
+
+
+        /*
+         * Für jeden Eintrag im buttons-Array
+         * wird automatisch ein Button erstellt.
+         */
+        buttons.forEach(button => {
+
+            const element = document.createElement("button");
+
+            // Beschriftung
+            element.textContent = button.text;
+
+            // CSS-Klasse
+            element.className = "matrixButton";
+
+            // Link beim Anklicken öffnen
+            element.addEventListener("click", () => {
+                window.location.href = button.link;
+            });
+
+            // Button in die Matrix einfügen
+            matrix.appendChild(element);
+
+        });
+
+    </script>
+
+</body>
+</html>
