@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aggregatzustände Quiz</title>
+    <style>
+        /* Grundlegende Stil-Einstellungen basierend auf dem Screenshot */
+        :root {
+            --bg-color: #121212; /* Sehr dunkler Hintergrund */
+            --text-color: #e0e0e0; /* Hellgrauer Text */
+            --box-bg-color: #2c2c2c; /* Etwas hellere Boxen */
+            --correct-bg-color: #1a4d1a; /* Dunkelgrün für korrekte Antwort */
+            --incorrect-bg-color: #661a1a; /* Dunkelrot für inkorrekte Antwort */
+            --btn-blue: #0056b3; /* Dunkelblau für den Weiter-Button */
+            --accent-color: #3a7afe; /* Akzentfarbe für die Fortschritts-Leiste */
+            --font-family: Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: var(--font-family);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Haupt-Quiz-Container */
+        .quiz-container {
+            width: 100%;
+            max-width: 600px;
+        }
+
+        /* Fortschritts-Leiste */
+        .progress-bar-container {
+            width: 100%;
+            height: 10px;
+            background-color: #333;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background-color: var(--accent-color);
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            font-size: 14px;
+            color: #aaaaaa;
+            text-align: right;
+            margin-top: -15px;
+        }
+
+        /* Die Frage und Überschrift */
+        .header {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .question-text {
+            font-size: 18px;
+            line-height: 1.5;
+            margin-bottom: 30px;
+        }
+
+        /* Antwort-Optionen */
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .option-box {
+            background-color: var(--box-bg-color);
+            padding: 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .option-box:hover {
+            background-color: #3d3d3d;
+        }
+
+        /* Stil für korrekte/inkorrekte Antworten, wenn sie angezeigt werden */
+        .option-box.selected-correct {
+            background-color: var(--correct-bg-color);
+        }
+
+        .option-box.selected-incorrect {
+            background-color: var(--incorrect-bg-color);
+        }
+
+        .option-label {
+            font-size: 16px;
+            display: block;
+        }
+
+        /* Korrektur-Text, der standardmäßig ausgeblendet ist */
+        .explanation {
+            font-size: 14px;
+            margin-top: 10px;
+            line-height: 1.4;
+            display: none;
+        }
+
+        /* Stil-Änderungen, wenn die Korrektur angezeigt wird */
+        .option-box.selected-correct .explanation,
+        .option-box.selected-incorrect .explanation {
+            display: block;
+        }
+
+        .option-box.selected-correct .option-label::before {
+            content: "✓ "; /* Grüner Haken */
+        }
+
+        .option-box.selected-incorrect .option-label::before {
+            content: "✗ "; /* Rotes Kreuz */
+        }
+
+        /* Navigations-Buttons */
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-top: auto; /* Buttons nach unten schieben */
+        }
+
+        .btn {
+            border: none;
+            border-radius: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .btn-secondary {
+            background-color: var(--box-bg-color);
+            color: var(--text-color);
+        }
+
+        .btn-primary {
+            background-color: var(--btn-blue);
+            color: white;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="quiz-container">
+    <div class="header">
+        Aggregatzustände – Wahr oder Falsch?
+    </div>
+
+    <div class="progress-bar-container">
+        <div class="progress-bar-fill" id="progress-bar-fill"></div>
+    </div>
+    <span class="progress-text" id="progress-text">Frage <span id="current-question-num"></span> / <span id="total-questions-num"></span></span>
+
+    <div class="question-text" id="question-text">
+        </div>
+
+    <div class="options-container" id="options-container">
+        </div>
+
+    <div class="nav-buttons">
+        <button class="btn btn-secondary" onclick="prevQuestion()">Zurück</button>
+        <button class="btn btn-primary" onclick="nextQuestion()">Weiter</button>
+    </div>
+</div>
+
+<script>
+    // Quiz-Daten
+    const questions = [
+        {
+            num: 1,
+            text: "1. Wasser siedet bei Meereshöhe immer bei 100 °C.",
+            correct: "A",
+            options: [
+                { label: "A. Richtig", explanation: "Verdunsten ist ein kontinuierlicher Prozess an der Wasseroberfläche." },
+                { label: "B. Falsch", explanation: "Der Siedepunkt hängt vom Luftdruck ab. Auf dem Mount Everest siedet Wasser schon bei ca. 71 °C." }
+            ]
+        },
+        {
+            num: 5, // Diese Frage ist im Screenshot
+            text: "5. Wasser kann ausschließlich dann in den gasförmigen Zustand übergehen, wenn exakt der Siedepunkt bei 100 °C erreicht wird.",
+            correct: "B",
+            options: [
+                { label: "A. Richtig", explanation: "Incorrect. Wasser verdunstet auch kontinuierlich bei Raumtemperatur an der Oberfläche, ohne zu sieden." },
+                { label: "B. Falsch", explanation: "Correct! Verdunsten findet unterhalb des Siedepunkts statt, während Sieden im gesamten Volumen bei 100 °C passiert." }
+            ]
+        },
+        // Hier können weitere Fragen hinzugefügt werden
+    ];
+
+    let currentQuestionIndex = 0; // Wir beginnen mit der ersten Frage
+
+    // Funktion zum Anzeigen der aktuellen Frage
+    function showQuestion() {
+        const question = questions[currentQuestionIndex];
+        document.getElementById("current-question-num").textContent = question.num;
+        document.getElementById("total-questions-num").textContent = questions.length;
+        document.getElementById("question-text").textContent = question.text;
+
+        const optionsContainer = document.getElementById("options-container");
+        optionsContainer.innerHTML = ""; // Container leeren
+
+        question.options.forEach((option, index) => {
+            const optionBox = document.createElement("div");
+            optionBox.className = "option-box";
+            optionBox.onclick = () => selectOption(optionBox, option, question.correct);
+
+            const labelSpan = document.createElement("span");
+            labelSpan.className = "option-label";
+            labelSpan.textContent = option.label;
+
+            const explanationSpan = document.createElement("div");
+            explanationSpan.className = "explanation";
+            explanationSpan.textContent = option.explanation;
+
+            optionBox.appendChild(labelSpan);
+            optionBox.appendChild(explanationSpan);
+            optionsContainer.appendChild(optionBox);
+        });
+
+        updateProgressBar();
+    }
+
+    // Funktion zum Verarbeiten einer ausgewählten Option
+    function selectOption(clickedElement, optionData, correctAnswerLabel) {
+        // Zuerst alle anderen Optionen zurücksetzen, falls sie ausgewählt waren
+        const allOptions = document.querySelectorAll('.option-box');
+        allOptions.forEach(function(opt) {
+            opt.classList.remove('selected-correct', 'selected-incorrect');
+        });
+
+        const isCorrect = optionData.label.startsWith(correctAnswerLabel);
+
+        if (isCorrect) {
+            clickedElement.classList.add('selected-correct');
+        } else {
+            clickedElement.classList.add('selected-incorrect');
+        }
+    }
+
+    // Funktionen für die Navigation
+    function prevQuestion() {
+        if (currentQuestionIndex > 0) {
+            currentQuestionIndex--;
+            showQuestion();
+        }
+    }
+
+    function nextQuestion() {
+        if (currentQuestionIndex < questions.length - 1) {
+            currentQuestionIndex++;
+            showQuestion();
+        }
+    }
+
+    // Funktion zum Aktualisieren der Fortschritts-Leiste
+    function updateProgressBar() {
+        const fillPercentage = ((currentQuestionIndex + 1) / questions.length) * 100;
+        document.getElementById("progress-bar-fill").style.width = fillPercentage + "%";
+    }
+
+    // Erste Frage beim Laden anzeigen
+    showQuestion();
+</script>
+
+</body>
+</html>

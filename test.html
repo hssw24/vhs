@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aggregatzustände Quiz - Frage 5</title>
+    <style>
+        /* Grundlegende Stil-Einstellungen (ähnlich wie im Screenshot) */
+        :root {
+            --bg-color: #1a1a2e; /* Dunkler Hintergrund */
+            --text-color-primary: #e0e0e0; /* Hellgrauer Text */
+            --text-color-secondary: #aaaaaa; /* Dunkelgrauer Text für Hinweise */
+            --incorrect-bg: #ffb3b3; /* Helles Rosa-Rot */
+            --incorrect-text: #660000; /* Dunkles Weinrot */
+            --correct-bg: #b3ffb3; /* Helles Grün */
+            --correct-text: #004d00; /* Dunkles Grün */
+            --btn-bg: #162447; /* Dunkelblaue Buttons */
+            --btn-text: #e0e0e0;
+            --btn-primary-bg: #0056b3; /* Helles Blau für "Weiter" */
+            --font-family: Arial, sans-serif;
+            --radius-main: 15px; /* Abrundung der Blöcke */
+            --radius-btn: 20px; /* Abrundung der Buttons */
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color-primary);
+            font-family: var(--font-family);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Haupt-Quiz-Container */
+        .quiz-container {
+            width: 100%;
+            max-width: 600px;
+            margin: auto;
+        }
+
+        /* Titel-Zeile */
+        .header {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-align: left;
+            width: 100%;
+        }
+
+        /* Fortschritts-Leiste */
+        .progress-bar-container {
+            width: 100%;
+            height: 10px;
+            background-color: #333333; /* Dunkelgrau für leeren Balken */
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background-color: #3a7afe; /* Blau für gefüllten Balken */
+            width: 50%; /* Beispielhaft 50% für Frage 5/10 */
+        }
+
+        .progress-text {
+            font-size: 14px;
+            color: var(--text-color-secondary);
+            float: right;
+            margin-top: -10px;
+        }
+
+        /* Die Frage */
+        .question-text {
+            font-size: 18px;
+            line-height: 1.5;
+            margin-bottom: 30px;
+            text-align: left;
+            width: 100%;
+        }
+
+        /* Antwort-Container */
+        .answer-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 100%;
+            margin-bottom: 30px;
+        }
+
+        /* Basis-Stil für jede Antwort */
+        .answer-box {
+            padding: 20px;
+            border-radius: var(--radius-main);
+            display: flex;
+            flex-direction: column;
+            cursor: pointer;
+            position: relative;
+            box-sizing: border-box; /* padding inside border */
+        }
+
+        .answer-label {
+            font-size: 16px;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        /* Falsche Antwort-Stil (wird über CSS-Klasse hinzugefügt) */
+        .answer-box.incorrect {
+            background-color: var(--incorrect-bg);
+            color: var(--incorrect-text);
+        }
+
+        /* Richtige Antwort-Stil (wird über CSS-Klasse hinzugefügt)```html
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aggregatzustände Quiz - Frage 5</title>
+    <style>
+        /* Grundlegende Stil-Einstellungen (ähnlich wie im Screenshot) */
+        :root {
+            --bg-color: #1a1a2e; /* Dunkler Hintergrund */
+            --text-color-primary: #e0e0e0; /* Hellgrauer Text */
+            --text-color-secondary: #aaaaaa; /* Dunkelgrauer Text für Hinweise */
+            --incorrect-bg: #ffb3b3; /* Helles Rosa-Rot */
+            --incorrect-text: #660000; /* Dunkles Weinrot */
+            --correct-bg: #b3ffb3; /* Helles Grün */
+            --correct-text: #004d00; /* Dunkles Grün */
+            --btn-bg: #162447; /* Dunkelblaue Buttons */
+            --btn-text: #e0e0e0;
+            --btn-primary-bg: #0056b3; /* Helles Blau für "Weiter" */
+            --font-family: Arial, sans-serif;
+            --radius-main: 15px; /* Abrundung der Blöcke */
+            --radius-btn: 20px; /* Abrundung der Buttons */
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color-primary);
+            font-family: var(--font-family);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Haupt-Quiz-Container */
+        .quiz-container {
+            width: 100%;
+            max-width: 600px;
+            margin: auto;
+        }
+
+        /* Titel-Zeile */
+        .header {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-align: left;
+            width: 100%;
+        }
+
+        /* Fortschritts-Leiste */
+        .progress-bar-container {
+            width: 100%;
+            height: 10px;
+            background-color: #333333; /* Dunkelgrau für leeren Balken */
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background-color: #3a7afe; /* Blau für gefüllten Balken */
+            width: 50%; /* Beispielhaft 50% für Frage 5/10 */
+        }
+
+        .progress-text {
+            font-size: 14px;
+            color: var(--text-color-secondary);
+            float: right;
+            margin-top: -10px;
+        }
+
+        /* Die Frage */
+        .question-text {
+            font-size: 18px;
+            line-height: 1.5;
+            margin-bottom: 30px;
+            text-align: left;
+            width: 100%;
+        }
+
+        /* Antwort-Container */
+        .answer-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 100%;
+            margin-bottom: 30px;
+        }
+
+        /* Basis-Stil für jede Antwort */
+        .answer-box {
+            padding: 20px;
+            border-radius: var(--radius-main);
+            display: flex;
+            flex-direction: column;
+            cursor: pointer;
+            position: relative;
+            box-sizing: border-box; /* padding inside border */
+        }
+
+        .answer-label {
+            font-size: 16px;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        /* Falsche Antwort-Stil (wird über CSS-Klasse hinzugefügt) */
+        .answer-box.incorrect {
+            background-color: var(--incorrect-bg);
+            color: var(--incorrect-text);
+        }
+
+        /* Richtige Antwort-Stil (wird über CSS-Klasse hinzugefügt) */
+        .answer-box.correct {
+            background-color: var(--correct-bg);
+            color: var(--correct-text);
+        }
+
+        /* Die Erklärungen, die standardmäßig ausgeblendet sind */
+        .explanation {
+            display: none;
+            font-size: 14px;
+            line-height: 1.4;
+            margin-top: 10px;
+        }
+
+        /* Wenn die Antwort falsch ist, zeigen wir die Erklärung und die richtige Antwort an */
+        .answer-box.incorrect .explanation {
+            display: block;
+        }
+
+        /* Wenn die Antwort richtig ist, zeigen wir nur die Erklärung an */
+        .answer-box.correct .explanation {
+            display: block;
+        }
+
+        /* Hinweis-Bereich */
+        .hint-section {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .hint-toggle {
+            cursor: pointer;
+            color: var(--text-color-secondary);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .hint-text {
+            font-size: 14px;
+            color: var(--text-color-secondary);
+            line-height: 1.4;
+            /* Standardmäßig ausgeblendet */
+            display: none;
+        }
+
+        /* Navigations-Buttons */
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            gap: 15px;
+        }
+
+        .btn {
+            border: none;
+            border-radius: var(--radius-btn);
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            flex: 1; /* Nimmt gleichen Platz ein */
+        }
+
+        .btn-secondary {
+            background-color: var(--btn-bg);
+            color: var(--btn-text);
+        }
+
+        .btn-primary {
+            background-color: var(--btn-primary-bg);
+            color: white;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="quiz-container">
+    <div class="header">
+        Aggregatzustände – Wahr oder Falsch?
+    </div>
+
+    <div class="progress-bar-container">
+        <div class="progress-bar-fill"></div>
+    </div>
+    <span class="progress-text">5 / 10</span>
+
+    <div class="question-text">
+        5. Wasser kann ausschließlich dann in den gasförmigen Zustand übergehen, wenn exakt der Siedepunkt bei 100 °C erreicht wird.
+    </div>
+
+    <div class="answer-container">
+        <div class="answer-box incorrect" onclick="showCorrection(this)">
+            <span class="answer-label">A. Richtig</span>
+            <div class="explanation">
+                Incorrect. Wasser verdunstet auch kontinuierlich bei Raumtemperatur an der Oberfläche, ohne zu sieden.
+            </div>
+        </div>
+
+        <div class="answer-box correct" onclick="showCorrection(this)">
+            <span class="answer-label">B. Falsch</span>
+            <div class="explanation">
+                Correct! Verdunsten findet unterhalb des Siedepunkts statt, während Sieden im gesamten Volumen bei 100 °C passiert.
+            </div>
+        </div>
+    </div>
+
+    <div class="hint-section">
+        <div class="hint-toggle" onclick="toggleHint()">
+            <span>Hinweis ausblenden</span>
+            <span id="hint-arrow">&#9650;</span> </div>
+        <div class="hint-text" id="hint-text">
+            Denke an nasse Wäsche auf der Leine oder eine Pfütze nach dem Regen an einem warmen Tag.
+        </div>
+    </div>
+
+    <div class="nav-buttons">
+        <button class="btn btn-secondary">Zurück</button>
+        <button class="btn btn-primary">Weiter</button>
+    </div>
+</div>
+
+<script>
+    // Funktion zum Ein-/Ausblenden des Hinweises
+    function toggleHint() {
+        var hintText = document.getElementById("hint-text");
+        var hintToggle = document.querySelector(".hint-toggle span:first-child");
+        var hintArrow = document.getElementById("hint-arrow");
+
+        if (hintText.style.display === "block") {
+            hintText.style.display = "none";
+            hintToggle.textContent = "Hinweis anzeigen";
+            hintArrow.innerHTML = "&#9660;"; // Abwärts-Pfeil
+        } else {
+            hintText.style.display = "block";
+            hintToggle.textContent = "Hinweis ausblenden";
+            hintArrow.innerHTML = "&#9650;"; // Aufwärts-Pfeil
+        }
+    }
+
+    // Funktion, um die Korrektur anzuzeigen, wenn auf eine Antwort geklickt wird
+    function showCorrection(clickedElement) {
+        // Zuerst alle Erklärungen ausblenden, um Verwirrung zu vermeiden, falls eine andere angeklickt wird
+        var explanations = document.querySelectorAll('.explanation');
+        explanations.forEach(function(exp) {
+            exp.style.display = 'none';
+        });
+
+        // Dann nur die Erklärung des angeklickten Elements anzeigen
+        var explanation = clickedElement.querySelector('.explanation');
+        if (explanation) {
+            explanation.style.display = 'block';
+        }
+    }
+</script>
+
+</body>
+</html>

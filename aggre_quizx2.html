@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz: Aggregatzustände</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #e8f5e9; /* Heller, augenschonender grüner Hintergrund */
+            color: #1b5e20; /* Dunkelgrüne, kontrastreiche Schrift */
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .quiz-container {
+            max-width: 650px;
+            width: 100%;
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(27, 94, 32, 0.15);
+            border: 2px solid #a5d6a7;
+        }
+
+        h1 {
+            text-align: center;
+            color: #1b5e20;
+            margin-bottom: 10px;
+        }
+
+        p.intro {
+            text-align: center;
+            font-size: 1.1em;
+            margin-bottom: 30px;
+        }
+
+        .question-block {
+            background-color: #f1f8e9;
+            border-left: 5px solid #4caf50;
+            padding: 15px;
+            margin-bottom: 25px;
+            border-radius: 4px;
+        }
+
+        .question-text {
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 15px;
+        }
+
+        .options {
+            display: flex;
+            gap: 15px;
+        }
+
+        label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-size: 1.05em;
+            padding: 8px 15px;
+            border: 1px solid #c8e6c9;
+            border-radius: 6px;
+            background-color: #ffffff;
+            transition: background-color 0.2s;
+            width: 100%;
+        }
+
+        label:hover {
+            background-color: #e8f5e9;
+        }
+
+        input[type="radio"] {
+            accent-color: #1b5e20;
+            transform: scale(1.2);
+        }
+
+        .feedback {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 6px;
+            display: none;
+            font-size: 0.95em;
+            line-height: 1.4;
+        }
+
+        .feedback.correct {
+            background-color: #c8e6c9;
+            color: #1b5e20;
+            border: 1px solid #81c784;
+            display: block;
+        }
+
+        .feedback.incorrect {
+            background-color: #ffcdd2;
+            color: #b71c1c;
+            border: 1px solid #e57373;
+            display: block;
+        }
+
+        .submit-btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background-color: #1b5e20;
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-top: 20px;
+        }
+
+        .submit-btn:hover {
+            background-color: #2e7d32;
+        }
+
+        #result-container {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #c8e6c9;
+            border: 2px solid #1b5e20;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 1.3em;
+            font-weight: bold;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="quiz-container">
+    <h1>Quiz: Aggregatzustände</h1>
+    <p class="intro">Wähle bei jeder Frage aus, ob die Aussage <strong>Richtig</strong> oder <strong>Falsch</strong> ist.</p>
+
+    <form id="quizForm">
+        <!-- Frage 1 -->
+        <div class="question-block">
+            <div class="question-text">1. In einem festen Körper (Feststoff) schwingen die Teilchen ständig um feste Ruhepositionen, anstatt völlig stillzustehen.</div>
+            <div class="options">
+                <label><input type="radio" name="q1" value="Richtig"> Richtig</label>
+                <label><input type="radio" name="q1" value="Falsch"> Falsch</label>
+            </div>
+            <div class="feedback" id="fb1"></div>
+        </div>
+
+        <!-- Frage 2 -->
+        <div class="question-block">
+            <div class="question-text">2. Ein Gas behält in einem Gefäß stets ein festes, unveränderliches Eigenvolumen bei, unabhängig von der Größe des Raumes.</div>
+            <div class="options">
+                <label><input type="radio" name="q2" value="Richtig"> Richtig</label>
+                <label><input type="radio" name="q2" value="Falsch"> Falsch</label>
+            </div>
+            <div class="feedback" id="fb2"></div>
+        </div>
+
+        <!-- Frage 3 -->
+        <div class="question-block">
+            <div class="question-text">3. Während des gesamten Schmelzvorgangs eines reinen Stoffes (z. B. Eis zu Wasser) bleibt die Temperatur des Stoffes konstant.</div>
+            <div class="options">
+                <label><input type="radio" name="q3" value="Richtig"> Richtig</label>
+                <label><input type="radio" name="q3" value="Falsch"> Falsch</label>
+            </div>
+            <div class="feedback" id="fb3"></div>
+        </div>
+
+        <!-- Frage 4 -->
+        <div class="question-block">
+            <div class="question-text">4. Flüssigkeiten besitzen eine feste, eigene Form und passen sich niemals der Form eines Gefäßes an.</div>
+            <div class="options">
+                <label><input type="radio" name="q4" value="Richtig"> Richtig</label>
+                <label><input type="radio" name="q4" value="Falsch"> Falsch</label>
+            </div>
+            <div class="feedback" id="fb4"></div>
+        </div>
+
+        <!-- Frage 5 -->
+        <div class="question-block">
+            <div class="question-text">5. Wasser kann ausschließlich dann in den gasförmigen Zustand übergehen, wenn exakt der Siedepunkt bei 100 °C erreicht wird.</div>
+            <div class="options">
+                <label><input type="radio" name="q5" value="Richtig"> Richtig</label>
+                <label><input type="radio" name="q5" value="Falsch"> Falsch</label>
+            </div>
+            <div class="feedback" id="fb5"></div>
+        </div>
+
+        <!-- Frage 6 -->
+        <div class="question-block">
+            <div class="question-text">6. Als Sublimation bezeichnet man den direkten Übergang eines Stoffes vom festen in den gasförmigen Zustand, ohne den flüssigen Zustand zu durchlaufen.</div>
+            <div class="options">
+                <label><input type="radio" name="q6" value="Richtig"> Richtig</label>
+                <label><input type="radio" name="q6" value="Falsch"> Falsch</label>
+            </div>
+            <div class="feedback" id="fb6"></div>
+        </div>
+
+        <!-- Frage 7 -->
+        <div class="question-block">
+            <div class="question-text">7. Flüssigkeiten lassen sich unter Druck genauso leicht und stark zusammendrücken wie Gase.</div>
+            <div class="options">
+                <label><input type="radio" name="q7" value="Richtig"> Richtig</label>
+                <label><input type="radio" name="q7" value="Falsch"> Falsch</label>
+            </div>
+            <div class="feedback" id="fb7"></div>
+        </div>
+
+        <!-- Frage 8 -->
+        <div class="question-block">
+            <div class="question-text">8. Wasser dehnt sich beim Gefrieren aus und Eis hat eine geringere Dichte als flüssiges Wasser, weshalb Eis auf dem Wasser schwimmt.</div>
+            <div class="options">
+                <label><input type="radio" name="q8" value="Richtig"> Richtig</label>
+                <label><input type="radio" name="q8" value="Falsch"> Falsch</label>
+            </div>
+            <div class="feedback" id="fb8"></div>
+        </div>
+
+        <!-- Frage 9 -->
+        <div class="question-block">
+            <div class="question-text">9. Die Anziehungskräfte zwischen den Teilchen in einem Gas sind extrem stark und pressen diese in einen festen Block zusammen.</div>
+            <div class="options">
+                <label><input type="radio" name="q9" value="Richtig"> Richtig</label>
+                <label><input type="radio" name="q9" value="Falsch"> Falsch</label>
+            </div>
+            <div class="feedback" id="fb9"></div>
+        </div>
+
+        <!-- Frage 10 -->
+        <div class="question-block">
+            <div class="question-text">10. Kondensation beschreibt den Übergang eines Stoffes vom gasförmigen in den flüssigen Aggregatzustand.</div>
+            <div class="options">
+                <label><input type="radio" name="q10" value="Richtig"> Richtig</label>
+                <label><input type="radio" name="q10" value="Falsch"> Falsch</label>
+            </div>
+            <div class="feedback" id="fb10"></div>
+        </div>
+
+        <button type="button" class="submit-btn" onclick="evaluateQuiz()">Quiz auswerten & Punkte anzeigen</button>
+    </form>
+
+    <div id="result-container"></div>
+</div>
+
+<script>
+    const answers = {
+        q1: { correct: "Richtig", text: "Richtig! Auch in Feststoffen besitzen die Bausteine thermische Energie und führen kleine Schwingungen an ihren Gitterplätzen aus." },
+        q2: { correct: "Falsch", text: "Richtig gelöst! Gase haben kein festes Volumen und dehnen sich so weit aus, bis sie den gesamten verfügbaren Raum vollständig ausfüllen." },
+        q3: { correct: "Richtig", text: "Stimmt genau! Die gesamte zugeführte Energie wird für den Phasenwechsel (Aufbrechen des Kristallgitters) verwendet, nicht für die Temperaturerhöhung." },
+        q4: { correct: "Falsch", text: "Sehr gut! Flüssigkeiten sind fließfähig und nehmen immer die Form des Gefäßes an, in das sie gefüllt werden." },
+        q5: { correct: "Falsch", text: "Korrekt! Wasser verdunstet auch kontinuierlich bei Raumtemperatur an der Oberfläche (z.B. nasse Wäsche), ohne zu sieden." },
+q6: { correct: "Richtig", text: "Richtig! Ein bekanntes Beispiel hierfür ist Trockeneis (festes Kohlenstoffdioxid), das bei Raumtemperatur direkt zu Gas wird." },q7: { correct: "Falsch", text: "Korrekt! Gase lassen sich stark komprimieren, weil ihre Teilchen weit auseinanderliegen; Flüssigkeiten hingegen gelten als fast inkompressibel." },q8: { correct: "Richtig", text: "Stimmt auffallend! Das ist die berühmte Dichteanomalie des Wassers. Weil Eis leichter ist als flüssiges Wasser, frieren Seen von oben nach unten zu." },q9: { correct: "Falsch", text: "Richtig! Die Anziehungskräfte in Gasen sind extrem schwach, weshalb sich die Teilchen völlig frei und unabhängig voneinander bewegen." },q10: { correct: "Richtig", text: "Ganz genau! Wenn warmer Wasserdampf abkühlt (z. B. am Badezimmerspiegel nach dem Duschen), kondensiert er zu flüssigen Wassertropfen." }};function evaluateQuiz() {let score = 0;const totalquestions = 10;for (let i = 1; i <= totalquestions; i++) {const queryName = 'q' + i;const selected = document.querySelector(input[name="${queryName}"]:checked);const feedbackDiv = document.getElementById('fb' + i);if (selected) {if (selected.value === answers[queryName].correct) {score++;feedbackDiv.className = "feedback correct";feedbackDiv.innerHTML = "Richtig! " + answers[queryName].text;} else {feedbackDiv.className = "feedback incorrect";feedbackDiv.innerHTML = "Leider falsch. " + answers[queryName].text;}} else {feedbackDiv.className = "feedback incorrect";feedbackDiv.innerHTML = "Nicht beantwortet! " + answers[queryName].text;}}const resultContainer = document.getElementById('result-container');const percentage = Math.round((score / totalquestions) * 100);resultContainer.style.display = "block";resultContainer.innerHTML = Ergebnis: ${score} von ${totalquestions} Punkten richtig (${percentage}%);resultContainer.scrollIntoView({ behavior: 'smooth' });}
