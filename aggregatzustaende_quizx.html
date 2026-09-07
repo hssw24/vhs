@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz: Aggregatzustände (10 Fragen)</title>
+    <style>
+        body {
+            background-color: #e8f5e9;
+            color: #1b5e20;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(27, 94, 32, 0.1);
+            border: 2px solid #a5d6a7;
+        }
+        h1 {
+            color: #1b5e20;
+            text-align: center;
+            border-bottom: 3px solid #81c784;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+        p.intro {
+            font-size: 1.1em;
+            text-align: center;
+            margin-bottom: 30px;
+            font-weight: 500;
+        }
+        .question-card {
+            background-color: #f1f8e9;
+            border-left: 5px solid #4caf50;
+            padding: 20px;
+            margin-bottom: 25px;
+            border-radius: 0 8px 8px 0;
+        }
+        .question-text {
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        .options {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .btn-option {
+            background-color: #ffffff;
+            color: #1b5e20;
+            border: 2px solid #81c784;
+            padding: 10px 20px;
+            font-size: 1em;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            flex: 1;
+        }
+        .btn-option:hover {
+            background-color: #c8e6c9;
+        }
+        .btn-option.selected {
+            background-color: #1b5e20;
+            color: #ffffff;
+            border-color: #1b5e20;
+        }
+        .feedback {
+            display: none;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 10px;
+            font-weight: 500;
+        }
+        .feedback.correct {
+            background-color: #c8e6c9;
+            color: #1b5e20;
+            border: 1px solid #81c784;
+        }
+        .feedback.incorrect {
+            background-color: #ffcdd2;
+            color: #b71c1c;
+            border: 1px solid #ef9a9a;
+        }
+        .submit-section {
+            text-align: center;
+            margin-top: 40px;
+        }
+        .btn-submit {
+            background-color: #1b5e20;
+            color: #ffffff;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2em;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: background-color 0.2s;
+        }
+        .btn-submit:hover {
+            background-color: #2e7d32;
+        }
+        #result-box {
+            display: none;
+            background-color: #c8e6c9;
+            border: 3px solid #1b5e20;
+            padding: 25px;
+            border-radius: 10px;
+            text-align: center;
+            margin-top: 30px;
+            font-size: 1.3em;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Quiz: Aggregatzustände</h1>
+    <p class="intro">Teste dein Wissen! Lies dir die Aussagen genau durch und entscheide, ob sie <strong>Richtig</strong> oder <strong>Falsch</strong> sind.</p>
+
+    <div id="quiz-form">
+        <!-- Frage 1 -->
+        <div class="question-card" data-correct="Falsch">
+            <div class="question-text">Frage 1: In einem festen Körper (Feststoff) bewegen sich die Teilchen überhaupt nicht und stehen völlig still.</div>
+            <div class="options">
+                <button type="button" class="btn-option" onclick="selectOption(this, 'Richtig')">Richtig</button>
+                <button type="button" class="btn-option" onclick="selectOption(this, 'Falsch')">Falsch</button>
+            </div>
+            <div class="feedback font-weight-medium"></div>
+        </div>
+
+        <!-- Frage 2 -->
+        <div class="question-card" data-correct="Richtig">
+            <div class="question-text">Frage 2: Ein Gas nimmt immer das gesamte Volumen des Gefäßes ein, in dem es sich befindet.</div>
+            <div class="options">
+                <button type="button" class="btn-option" onclick="selectOption(this, 'Richtig')">Richtig</button>
+                <button type="button" class="btn-option" onclick="selectOption(this, 'Falsch')">Falsch</button>
+            </div>
+            <div class="feedback font-weight-medium"></div>
+        </div>
+
+        <!-- Frage 3 -->
+        <div class="question-card" data-correct="Falsch">
+            <div class="question-text">Frage 3: Beim Schmelzen eines reinen Stoffes (z. B. Eis zu Wasser) steigt die Temperatur während des gesamten Schmelzvorgangs kontinuierlich an.</div>
+            <div class="options">
+                <button type="button" class="btn-option" onclick="selectOption(this, 'Richtig')">Richtig</button>
+                <button type="button" class="btn-option" onclick="selectOption(this, 'Falsch')">Falsch</button>
+            </div>
+            <div class="feedback font-weight-medium"></div>
+        </div>
+
+        <!-- Frage 4 -->
+        <div class="question-card" data-correct="Falsch">
+            <div class="question-text">Frage 4: Flüssigkeiten besitzen eine feste, eigene Form und passen sich niemals der Form eines Gefäßes an.</div>
+            <div class="options">
+                <button type="button" class="btn-option" onclick="selectOption(this, 'Richtig')">Richtig</button>
+                <button type="button" class="btn-option" onclick="selectOption(this, 'Falsch')">Falsch</button>
+            </div>
+            <div class="feedback font-weight-medium"></div>
+        </div>
+
+        <!-- Frage 5 -->
+        <div class="question-card" data-correct="Falsch">
+            <div class="question-text">Frage 5: Wasser kann nur dann zu Wasserdampf werden, wenn es genau den Siedepunkt bei 100 °C erreicht hat.</div>
+            <div class="options">
+                <button type="button" class="btn-option" onclick="selectOption(this, 'Richtig')">Richtig</button>
+                <button type="button" class="btn-option" onclick="selectOption(this, 'Falsch')">Falsch</button>
+            </div>
+            <div class="feedback font-weight-medium"></div>
+        </div>
+
+        <!-- Frage 6 -->
+        <div class="question-card" data-correct="Richtig">
+            <div class="question-text">Frage 6: Wenn ein fester Stoff direkt in den gasförmigen Zustand übergeht, ohne vorher flüssig zu werden, nennt man das Sublimieren.</div>
+            <div class="options">
+                <button type="button" class="btn-option" onclick="selectOption(this, 'Richtig')">Richtig</button>
+                <button type="button" class="btn-option" onclick="selectOption(this, 'Falsch')">Falsch</button>
+            </div>
+            <div class="feedback font-weight-medium"></div>
+        </div>
+
+        <!-- Frage 7 -->
+        <div class="question-card" data-correct="Falsch">
+            <div class="question-text">Frage 7: Flüssigkeiten lassen sich genauso leicht und stark zusammendrücken (komprimieren) wie Gase.</div>
+            <div class="options">
+                <button type="button" class="btn-option" onclick="selectOption(this, 'Richtig')">Richtig</button>
+                <button type="button" class="btn-option" onclick="selectOption(this, 'Falsch')">Falsch</button>
+            </div>
+            <div class="feedback font-weight-medium"></div>
+        </div>
+
+        <!-- Frage 8 -->
+        <div class="question-card" data-correct="Richtig">
+            <div class="question-text">Frage 8: Wasser hat im festen Zustand (Eis) eine geringere Dichte als im flüssigen Zustand, weshalb Eis auf dem Wasser schwimmt.</div>
+            <div class="options">
+                <button type="button" class="btn-option" onclick="selectOption(this, 'Richtig')">Richtig</button>
+                <button type="button" class="btn-option" onclick="selectOption(this, 'Falsch')">Falsch</button>
+            </div>
+            <div class="feedback font-weight-medium"></div>
+        </div>
+
+        <!-- Frage 9 -->
+        <div class="question-card" data-correct="Falsch">
+            <div class="question-text">Frage 9: Die Teilchen in einem Gas haben extrem starke Anziehungskräfte aufeinander und kleben fest zusammen.</div>
+            <div class="options">
+                <button type="button" class="btn-option" onclick="selectOption(this, 'Richtig')">Richtig</button>
+                <button type="button" class="btn-option" onclick="selectOption(this, 'Falsch')">Falsch</button>
+            </div>
+            <div class="feedback font-weight-medium"></div>
+        </div>
+
+        <!-- Frage 10 -->
+        <div class="question-card" data-correct="Richtig">
+            <div class="question-text">Frage 10: Wenn ein gasförmiger Stoff zu einer Flüssigkeit wird (z. B. Beschlagen einer kalten Scheibe), nennt man diesen Vorgang Kondensieren.</div>
+            <div class="options">
+                <button type="button" class="btn-option" onclick="selectOption(this, 'Richtig')">Richtig</button>
+                <button type="button" class="btn-option" onclick="selectOption(this, 'Falsch')">Falsch</button>
+            </div>
+            <div class="feedback font-weight-medium"></div>
+        </div>
+
+        <div class="submit-section">
+            <button type="button" class="btn-submit" onclick="evaluateQuiz()">Quiz auswerten & Punkte anzeigen</button>
+        </div>
+    </div>
+
+    <div id="result-box"></div>
+</div>
+
+<script>
+    const explanations = {
+        0: "Richtig! Auch in Feststoffen schwingen die Teilchen ständig um feste Plätze herum, sie sind nicht absolut bewegungslos.",
+        1: "Richtig! Gase haben keinen festen Raum und dehnen sich so weit aus, bis sie das verfügbare Volumen vollständig ausfüllen.",
+        2: "Richtig! Während des Schmelzens bleibt die Temperatur des Stoffes konstant, bis der gesamte feste Stoff geschmolzen ist (Schmelzwärme).",
+        3: "Richtig! Flüssigkeiten fließen und nehmen immer die Form des Gefäßes an, in das sie gefüllt werden. Sie haben keine feste Form.",
+        4: "Richtig! Wasser verdunstet auch bei Raumtemperatur (unter 100 °C) langsam an der Oberfläche, ohne zu sieden (z.B. nasse Wäsche).",
+        5: "Richtig! Ein bekanntes Beispiel hierfür ist Trockeneis (festes Kohlenstoffdioxid), das direkt gasförmig wird.",
+        6: "Richtig! Flüssigkeiten gelten als inkompressibel (kaum zusammendrückbar), weil die Teilchen bereits sehr dicht beieinanderliegen.",
+        7: "Richtig! Weil Eis eine geringere Dichte hat (Dichteanomalie), schwimmt es oben und Gewässer frieren nicht von unten zu.",
+        8: "Richtig! Die Anziehungskräfte zwischen Gasteilchen sind extrem gering, weshalb sie sich völlig frei im Raum bewegen können.",
+        9: "Richtig! Wenn Wasserdampf abkühlt und flüssig wird (wie am Badezimmerspiegel), nennt man das Kondensieren."
+    };
+
+    const userAnswers = {};
+
+    function selectOption(button, value) {
+        const card = button.closest('.question-card');
+        const cards = Array.from(document.querySelectorAll('.question-card'));
+        const index = cards.indexOf(card);
+        
+        // Deselect other buttons in this card
+        card.querySelectorAll('.btn-option').forEach(btn => btn.classList.remove('selected'));
+        
+        // Select current button
+        button.classList.add('selected');
+        userAnswers[index] = value;
+    }
+
+    function evaluateQuiz() {
+        const cards = document.querySelectorAll('.question-card');
+        let score = 0;
+        let total = cards.length;
+
+        cards.forEach((card, index) => {
+            const correctAnswer = card.getAttribute('data-correct');
+            const userAnswer = userAnswers[index];
+            const feedbackBox = card.querySelector('.feedback');
+            
+            feedbackBox.style.display = 'block';
+            
+            if (userAnswer === correctAnswer) {
+                score++;
+                feedbackBox.className = 'feedback correct';
+                feedbackBox.innerHTML = `<strong>Richtig!</strong> ${explanations[index]}`;
+            } else {
+                feedbackBox.className = 'feedback incorrect';
+                feedbackBox.innerHTML = `<strong>Leider falsch.</strong> Richtige Antwort wäre gewiss: ${correctAnswer}. <br>${explanations[index]}`;
+            }
+        });
+
+        const resultBox = document.getElementById('result-box');
+        resultBox.style.display = 'block';
+        const percentage = Math.round((score / total) * 100);
+        resultBox.innerHTML = `Ergebnis: ${score} von ${total} Punkten richtig (${percentage}%)`;
+        resultBox.scrollIntoView({ behavior: 'smooth' });
+    }
+</script>
+
+</body>
+</html>
