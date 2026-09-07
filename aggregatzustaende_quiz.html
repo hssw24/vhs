@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz: Aggregatzustände</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #e8f5e9;
+            color: #1b5e20;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            max-width: 700px;
+            width: 100%;
+            background-color: #ffffff;
+            border: 2px solid #a5d6a7;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        h1 {
+            color: #004d40;
+            text-align: center;
+            margin-top: 0;
+        }
+        .intro {
+            text-align: center;
+            font-size: 1.1em;
+            margin-bottom: 25px;
+            font-weight: 500;
+        }
+        .question-card {
+            border-bottom: 1px solid #c8e6c9;
+            padding: 20px 0;
+        }
+        .question-text {
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 12px;
+        }
+        button {
+            padding: 10px 25px;
+            font-size: 1em;
+            font-weight: bold;
+            border: 2px solid #2e7d32;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background-color: #ffffff;
+            color: #2e7d32;
+        }
+        button:hover {
+            background-color: #c8e6c9;
+        }
+        button.selected-true {
+            background-color: #2e7d32;
+            color: #ffffff;
+        }
+        button.selected-false {
+            background-color: #c62828;
+            color: #ffffff;
+            border-color: #c62828;
+        }
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .feedback {
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 10px;
+            font-weight: 500;
+            display: none;
+        }
+        .feedback.correct {
+            background-color: #c8e6c9;
+            color: #1b5e20;
+            border: 1px solid #81c784;
+            display: block;
+        }
+        .feedback.wrong {
+            background-color: #ffcdd2;
+            color: #c62828;
+            border: 1px solid #ef5350;
+            display: block;
+        }
+        #result-box {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #c8e6c9;
+            border: 2px solid #2e7d32;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 1.3em;
+            font-weight: bold;
+            display: none;
+        }
+        .submit-btn {
+            display: block;
+            width: 100%;
+            margin-top: 25px;
+            padding: 15px;
+            background-color: #2e7d32;
+            color: white;
+            font-size: 1.2em;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .submit-btn:hover {
+            background-color: #1b5e20;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Quiz: Die Aggregatzustände</h1>
+    <p class="intro">Teste dein Wissen! Lies jede Aussage genau durch und entscheide, ob sie <strong>Richtig</strong> oder <strong>Falsch</strong> ist.</p>
+    
+    <div id="quiz-questions"></div>
+
+    <button class="submit-btn" onclick="calculateScore()">Quiz auswerten & Punkte anzeigen</button>
+
+    <div id="result-box"></div>
+</div>
+
+<script>
+const quizData = [
+    { id: 1, q: "In einem Feststoff bewegen sich die kleinsten Teilchen überhaupt nicht und stehen völlig still.", a: false, e: "Auch in Feststoffen schwingen die Teilchen ständig um feste Plätze herum." },
+    { id: 2, q: "Ein Gas nimmt immer das gesamte Volumen des geschlossenen Gefäßes ein, in dem es sich befindet.", a: true, e: "Gase besitzen kein festes Volumen und breiten sich gleichmäßig im gesamten Raum aus." },
+    { id: 3, q: "Beim Schmelzen von reinem Eis bleibt die Temperatur so lange konstant bei 0 °C, bis alles flüssig ist.", a: true, e: "Die zugeführte Wärmeenergie wird für den Phasenübergang (Teilchenbindung lösen) benötigt, nicht für die Erwärmung." },
+    { id: 4, q: "Flüssigkeiten besitzen eine feste, eigene Form und passen sich niemals der Form eines Gefäßes an.", a: false, e: "Flüssigkeiten haben zwar ein festes Volumen, nehmen aber immer die Form des Gefäßes an." },
+    { id: 5, q: "Wasser kann nur dann in den gasförmigen Zustand übergehen, wenn es kocht und genau 100 °C heiß ist.", a: false, e: "Wasser verdunstet auch bei Zimmertemperatur langsam an der Oberfläche (z. B. feuchte Wäsche)." },
+    { id: 6, q: "Der direkte Übergang von einem Feststoff in den gasförmigen Zustand wird als Sublimation bezeichnet.", a: true, e: "Das bekannteste Beispiel ist Trockeneis, das ohne zu schmelzen direkt zu Gas wird." },
+    { id: 7, q: "Flüssigkeiten lassen sich genauso leicht und stark komprimieren (zusammendrücken) wie Gase.", a: false, e: "Die Teilchen in Flüssigkeiten liegen bereits sehr dicht beieinander, weshalb sie kaum komprimierbar sind." },
+    { id: 8, q: "Wasser dehnt sich beim Gefrieren aus, weshalb Eis eine geringere Dichte hat als flüssiges Wasser und oben schwimmt.", a: true, e: "Das nennt man die Dichteanomalie des Wassers." },
+    { id: 9, q: "Die Anziehungskräfte zwischen den Teilchen sind im gasförmigen Zustand am stärksten.", a: false, e: "Im Gas sind die Kräfte extrem schwach, weshalb sich die Teilchen völlig frei bewegen." },
+    { id: 10, q: "Wenn Wasserdampf abkühlt und wieder zu flüssigem Wasser wird, nennt man diesen Vorgang Kondensieren.", a: true, e: "Das sieht man zum Beispiel an beschlagenen Fenstern oder Spiegeln." },
+    { id: 11, q: "Der Übergang von gasförmig direkt zu fest (ohne flüssig zu werden) heißt Resublimation.", a: true, e: "Ein Beispiel dafür ist die Entstehung von Raureif im Winter aus der Luftfeuchtigkeit." },
+    { id: 12, q: "In welchem Aggregatzustand ein Stoff vorliegt, hängt ausschließlich von seiner Masse ab.", a: false, e: "Es hängt primär von der Temperatur und dem Umgebungsdruck ab." },
+    { id: 13, q: "Der weiße, sichtbare Nebel über einem kochenden Kochtopf besteht aus reinem, unsichtbarem Wasserdampf.", a: false, e: "Der sichtbare Nebel ist bereits kondensiertes flüssiges Wasser (winzige Tröpfchen). Echter Wasserdampf ist unsichtbar." },
+    { id: 14, q: "Im flüssigen Zustand sind die Teilchen zwar beweglich, aber immer noch durch Kräfte locker aneinander gebunden.", a: true, e: "Deshalb halten Flüssigkeiten ihr Volumen bei, ändern aber leicht ihre Form." },
+    { id: 15, q: "Wenn ein Stoff seinen Aggregatzustand ändert, verwandelt er sich in einen völlig neuen chemischen Stoff.", a: false, e: "Der Stoff bleibt chemisch exakt derselbe (z.B. bleibt Wasser immer H2O, ob als Eis oder Dampf)." },
+    { id: 16, q: "Die Temperatur, bei der ein Feststoff flüssig wird, nennt man den Siedepunkt.", a: false, e: "Das ist der Schmelzpunkt. Am Siedepunkt wird eine Flüssigkeit gasförmig." },
+    { id: 17, q: "Je höher die Temperatur eines Stoffes ist, desto schneller bewegen sich seine kleinsten Teilchen.", a: true, e: "Temperatur ist ein Maß für die durchschnittliche kinetische Energie (Bewegung) der Teilchen." },
+    { id: 18, q: "Gase haben weder eine feste Form noch ein festes Volumen.", a: true, e: "Sie füllen jeden Raum und jeden Behälter vollständig und gleichmäßig aus." },
+    { id: 19, q: "Erstarren und Gefrieren beschreiben physikalisch denselben Phasenübergang von flüssig zu fest.", a: true, e: "Beide Begriffe bezeichnen den Wechsel in den festen Zustand bei Abkühlung." },
+    { id: 20, q: "Beim Übergang von fest zu flüssig rücken die Teilchen bei fast allen Stoffen (außer Wasser) ein Stückchen weiter auseinander.", a: true, e: "Durch die stärkere Bewegung nimmt der Raumbedarf zu, weshalb sich die meisten Stoffe beim Schmelzen ausdehnen." }
+];
+
+const quizContainer = document.getElementById('quiz-questions');
+const userAnswers = {};
+
+function loadQuiz() {
+    quizData.forEach((item, index) => {
+        const qCard = document.createElement('div');
+        qCard.className = 'question-card';
+        
+        qCard.innerHTML = `
+            <div class="question-text">${index + 1}. ${item.q}</div>
+            <div class="btn-group">
+                <button id="btn-${item.id}-true" onclick="selectAnswer(${item.id}, true)">Richtig</button>
+                <button id="btn-${item.id}-false" onclick="selectAnswer(${item.id}, false)">Falsch</button>
+            </div>
+            <div id="feedback-${item.id}" class="feedback"></div>
+        `;
+        quizContainer.appendChild(qCard);
+    });
+}
+
+function selectAnswer(id, answer) {
+    userAnswers[id] = answer;
+    
+    const btnTrue = document.getElementById(`btn-${id}-true`);
+    const btnFalse = document.getElementById(`btn-${id}-false`);
+    
+    if(answer === true) {
+        btnTrue.className = 'selected-true';
+        btnFalse.className = '';
+    } else {
+        btnTrue.className = '';
+        btnFalse.className = 'selected-false';
+    }
+}
+
+function calculateScore() {
+    let score = 0;
+    let total = quizData.length;
+    
+    quizData.forEach(item => {
+        const feedbackDiv = document.getElementById(`feedback-${item.id}`);
+        const userAnswer = userAnswers[item.id];
+        
+        if (userAnswer === undefined) {
+            feedbackDiv.className = 'feedback wrong';
+            feedbackDiv.innerHTML = "Bitte beantworte diese Frage zuerst!";
+            return;
+        }
+        
+        if (userAnswer === item.a) {
+            score++;
+            feedbackDiv.className = 'feedback correct';
+            feedbackDiv.innerHTML = `<strong>Richtig!</strong> ${item.e}`;
+        } else {
+            feedbackDiv.className = 'feedback wrong';
+            feedbackDiv.innerHTML = `<strong>Leider falsch.</strong> ${item.e}`;
+        }
+    });
+    
+    const resultBox = document.getElementById('result-box');
+    resultBox.style.display = 'block';
+    resultBox.innerHTML = `Du hast das Quiz beendet!<br>Ergebnis: ${score} von ${total} Punkten richtig (${Math.round((score/total)*100)}%).`;
+    resultBox.scrollIntoView({ behavior: 'smooth' });
+}
+
+loadQuiz();
+</script>
+
+</body>
+</html>
