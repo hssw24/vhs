@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Richtig/Falsch-Quiz: Aggregatzustände</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #e8f5e9;
+            color: #1b5e20;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border: 2px solid #a5d6a7;
+        }
+        h1 {
+            text-align: center;
+            color: #2e7d32;
+            margin-bottom: 30px;
+        }
+        .question-card {
+            background-color: #c8e6c9;
+            border-left: 5px solid #4caf50;
+            padding: 15px;
+            margin-bottom: 25px;
+            border-radius: 4px;
+        }
+        .question-text {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #1b5e20;
+            margin-bottom: 15px;
+        }
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+        button {
+            padding: 10px 25px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            border: 2px solid #2e7d32;
+            border-radius: 5px;
+            background-color: #ffffff;
+            color: #2e7d32;
+            transition: all 0.2s ease;
+        }
+        button:hover {
+            background-color: #2e7d32;
+            color: #ffffff;
+        }
+        .feedback {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            display: none;
+        }
+        .correct {
+            background-color: #a5d6a7;
+            color: #1b5e20;
+            border: 1px solid #81c784;
+        }
+        .incorrect {
+            background-color: #ffcdd2;
+            color: #b71c1c;
+            border: 1px solid #ef9a9a;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Richtig/Falsch-Quiz: Aggregatzustände (Oberschule)</h1>
+    <div id="quiz"></div>
+</div>
+
+<script>
+const questions = [
+    { q: "1. In einem festen Körper (Feststoff) bewegen sich die Teilchen überhaupt nicht und stehen völlig still.", a: "falsch", r: "Richtig! Auch in Feststoffen schwingen die Teilchen ständig um feste Plätze herum, sie sind nicht absolut bewegungslos." },
+    { q: "2. Ein Gas nimmt immer das gesamte Volumen des Gefäßes ein, in dem es sich befindet.", a: "richtig", r: "Richtig! Gase haben keinen festen Raum und dehnen sich so weit aus, bis sie das verfügbare Volumen vollständig ausfüllen." },
+    { q: "3. Beim Schmelzen eines reinen Stoffes steigt die Temperatur während des gesamten Schmelzvorgangs kontinuierlich an.", a: "falsch", r: "Richtig! Während des Schmelzens bleibt die Temperatur des Stoffes konstant (Schmelzpunkt), bis der gesamte feste Stoff flüssig ist." },
+    { q: "4. Flüssigkeiten besitzen eine feste, eigene Form und passen sich niemals der Form eines Gefäßes an.", a: "falsch", r: "Richtig! Flüssigkeiten fließen und nehmen immer die Form des Gefäßes an, in das sie gefüllt werden." },
+    { q: "5. Wasser kann nur dann zu Wasserdampf werden, wenn es genau den Siedepunkt bei 100 °C erreicht hat.", a: "falsch", r: "Richtig! Wasser verdunstet auch unterhalb von 100 °C langsam an der Oberfläche, zum Beispiel auf der Wäscheleine." },
+    { q: "6. Wenn ein fester Stoff direkt in den gasförmigen Zustand übergeht, ohne vorher flüssig zu werden, nennt man das Sublimieren.", a: "richtig", r: "Richtig! Ein bekanntes Beispiel hierfür ist Trockeneis, das direkt zu Gas wird." },
+    { q: "7. Flüssigkeiten lassen sich genauso leicht und stark zusammendrücken (komprimieren) wie Gase.", a: "falsch", r: "Richtig! Flüssigkeiten gelten als inkompressibel, da die Teilchen bereits sehr dicht beieinanderliegen." },
+    { q: "8. Wasser hat im festen Zustand (Eis) eine geringere Dichte als im flüssigen Zustand, weshalb Eis auf dem Wasser schwimmt.", a: "richtig", r: "Richtig! Das ist die sogenannte Dichteanomalie des Wassers." },
+    { q: "9. Die Teilchen in einem Gas haben extrem starke Anziehungskräfte aufeinander und kleben fest zusammen.", a: "falsch", r: "Richtig! Die Anziehungskräfte in Gasen sind fast null, weshalb sich die Teilchen frei im Raum bewegen." },
+    { q: "10. Wenn ein gasförmiger Stoff zu einer Flüssigkeit wird (z. B. Beschlagen einer kalten Scheibe), nennt man diesen Vorgang Kondensieren.", a: "richtig", r: "Richtig! Abkühlender Wasserdampf wird beim Kontakt mit kalten Oberflächen wieder flüssig." },
+    { q: "11. Der Übergang von einer Flüssigkeit zu einem Feststoff wird als Erstarren oder Gefrieren bezeichnet.", a: "richtig", r: "Richtig! Entzieht man einer Flüssigkeit genug Wärmeenergie, wird sie fest." },
+    { q: "12. Wenn ein Gas direkt wieder fest wird, ohne vorher flüssig zu werden, nennt man das Resublimation.", a: "richtig", r: "Richtig! Ein Alltagsbeispiel dafür ist die Entstehung von Raureif an kalten Tagen." },
+    { q: "13. In welchem Aggregatzustand sich ein Stoff befindet, wird ausschließlich von der chemischen Zusammensetzung bestimmt; Druck spielt keine Rolle.", a: "falsch", r: "Richtig! Sowohl die Temperatur als auch der Umgebungsdruck bestimmen gemeinsam den Aggregatzustand." },
+    { q: "14. Der weiße Nebel über kochendem Wasser ist reiner, unsichtbarer Wasserdampf.", a: "falsch", r: "Richtig! Echter Wasserdampf ist unsichtbar. Der Nebel besteht bereits aus winzigen, kondensierten Wassertröpfchen." },
+    { q: "15. Je höher die Temperatur eines Stoffes ist, desto schneller bewegen sich seine kleinsten Teilchen.", a: "richtig", r: "Richtig! Temperatur ist physikalisch gesehen ein Maß für die ungeordnete Bewegung der Teilchen." },
+    { q: "16. Gase haben die Eigenschaft, dass sie immer ihre feste Form beibehalten.", a: "falsch", r: "Richtig! Gase besitzen weder eine feste Form noch ein festes Volumen." },
+    { q: "17. Wasser ist der einzige Stoff auf der Erde, der in der Natur in allen drei Aggregatzuständen gleichzeitig vorkommt.", a: "richtig", r: "Richtig! Wir finden Wasser als Eis (fest), Wasser (flüssig) und Wasserdampf (gasförmig) in unserer Atmosphäre." },
+    { q: "18. Beim Übergang von flüssig zu gasförmig (Verdampfen) rücken die Teilchen viel dichter zusammen.", a: "falsch", r: "Richtig! Die Teilchen entfernen sich beim Verdampfen extrem weit voneinander." },
+    { q: "19. Trockeneis besteht aus gefrorenem Wasser, das bei Raumtemperatur schmilzt.", a: "falsch", r: "Richtig! Trockeneis ist festes Kohlenstoffdioxid (CO2) und schmilzt nicht, sondern sublimiert direkt zu Gas." },
+    { q: "20. Die physikalischen Aggregatzustände ändern die chemischen Eigenschaften des Stoffes komplett; aus Wasser wird ein völlig neuer Stoff.", a: "falsch", r: "Richtig! Ein Phasenübergang ist ein physikalischer Vorgang. Die Wassermoleküle (H2O) bleiben im Eis, flüssigen Wasser und Dampf chemisch völlig identisch." }
+];
+
+const quizContainer = document.getElementById('quiz');
+
+questions.forEach((item, index) => {
+    const card = document.createElement('div');
+    card.className = 'question-card';
+
+    const text = document.createElement('div');
+    text.className = 'question-text';
+    text.innerText = item.q;
+    card.appendChild(text);
+
+    const btnGroup = document.createElement('div');
+    btnGroup.className = 'btn-group';
+
+    const rBtn = document.createElement('button');
+    rBtn.innerText = 'Richtig';
+    rBtn.onclick = () => checkAnswer(index, 'richtig', feedback);
+    
+    const fBtn = document.createElement('button');
+    fBtn.innerText = 'Falsch';
+    fBtn.onclick = () => checkAnswer(index, 'falsch', feedback);
+
+    btnGroup.appendChild(rBtn);
+    btnGroup.appendChild(fBtn);
+    card.appendChild(btnGroup);
+
+    const feedback = document.createElement('div');
+    feedback.className = 'feedback';
+    card.appendChild(feedback);
+
+    quizContainer.appendChild(card);
+});
+
+function checkAnswer(index, choice, feedbackElement) {
+    const item = questions[index];
+    feedbackElement.style.display = 'block';
+    if (choice === item.a) {
+        feedbackElement.className = 'feedback correct';
+        feedbackElement.innerText = 'Korrekt! ' + item.r;
+    } else {
+        feedbackElement.className = 'feedback incorrect';
+        feedbackElement.innerText = 'Leider falsch. ' + item.r;
+    }
+}
+</script>
+
+</body>
+</html>
