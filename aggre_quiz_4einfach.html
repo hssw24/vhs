@@ -10,9 +10,11 @@
             --text-color: #e0e0e0;
             --text-secondary: #aaaaaa;
             --box-bg-color: #2c2c2e;
-            --correct-bg-color: #274e13;
+            --correct-bg-color: #1c3b1e;
+            --correct-border: #2e6b32;
             --correct-text-color: #b6d7a8;
-            --incorrect-bg-color: #660000;
+            --incorrect-bg-color: #4a151b;
+            --incorrect-border: #8b2500;
             --incorrect-text-color: #f4cccc;
             --btn-blue: #0d6efd;
             --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -88,6 +90,7 @@
             border-radius: 14px;
             cursor: pointer;
             transition: background-color 0.2s;
+            border: 1px solid transparent;
         }
 
         .option-label {
@@ -104,22 +107,22 @@
 
         /* States */
         .option-box.selected-correct {
-            background-color: #1c3b1e;
-            border: 1px solid #2e6b32;
+            background-color: var(--correct-bg-color);
+            border-color: var(--correct-border);
         }
         .option-box.selected-correct .option-label { color: var(--correct-text-color); }
         .option-box.selected-correct .explanation { display: block; color: var(--correct-text-color); }
 
         .option-box.selected-incorrect {
-            background-color: #4a151b;
-            border: 1px solid #8b2500;
+            background-color: var(--incorrect-bg-color);
+            border-color: var(--incorrect-border);
         }
         .option-box.selected-incorrect .option-label { color: var(--incorrect-text-color); }
         .option-box.selected-incorrect .explanation { display: block; color: var(--incorrect-text-color); }
 
         /* Hint Section */
         .hint-section {
-            margin-top: 10px;
+            margin-top: 5px;
         }
 
         .hint-toggle {
@@ -137,6 +140,7 @@
             font-size: 14px;
             color: var(--text-secondary);
             line-height: 1.4;
+            display: none; /* Standardmäßig ausgeblendet */
         }
 
         /* Navigation Buttons */
@@ -144,7 +148,7 @@
             display: flex;
             justify-content: flex-end;
             gap: 12px;
-            margin-top: 20px;
+            margin-top: 10px;
         }
 
         .btn {
@@ -191,8 +195,8 @@
     <!-- Hinweis-Bereich -->
     <div class="hint-section">
         <div class="hint-toggle" onclick="toggleHint()">
-            <span>Hinweis ausblenden</span>
-            <span id="hint-arrow">▲</span>
+            <span>Hinweis anzeigen</span>
+            <span id="hint-arrow">▼</span>
         </div>
         <div class="hint-text" id="hint-text"></div>
     </div>
@@ -207,124 +211,120 @@
 const questions = [
     {
         num: 1,
-        text: "1. Wasser siedet bei Meereshöhe immer bei exakt 100 °C.",
-        hint: "Überlege, wie sich der Luftdruck verändert, wenn man auf einen hohen Berg steigt.",
+        text: "1. Kocht Wasser auf Meereshöhe, hat es immer genau 100 °C.",
+        hint: "Wie verändert sich die Luft, wenn du hoch auf einen Berg steigst?",
         correctIndex: 0,
         options: [
-            { label: "A. Richtig", explanation: "Correct! Unter normalem Atmosphärendruck (1013 hPa) liegt der Siedepunkt von Wasser bei 100 °C." },
-            { label: "B. Falsch", explanation: "Incorrect. Auf Meereshöhe stimmt dieser Wert exakt; erst bei verändertem Druck weicht er ab." }
+            { label: "A. Richtig", explanation: "Richtig! Bei normalem Luftdruck kocht Wasser exakt bei 100 °C." },
+            { label: "B. Falsch", explanation: "Falsch. Auf Meereshöhe stimmt das genau. Nur weiter oben auf Bergen ändert sich die Temperatur." }
         ]
     },
     {
         num: 2,
-        text: "2. Wenn Eis schmilzt, nimmt das Volumen des Wassers zu.",
-        hint: "Denke an die Dichteanomalie von Wasser oder daran, warum Eiswürfel im Glas oben schwimmen.",
+        text: "2. Wenn Eis schmilzt, braucht das flüssige Wasser mehr Platz als vorher.",
+        hint: "Warum schwimmen Eiswürfel im Wasserglas oben?",
         correctIndex: 1,
         options: [
-            { label: "A. Richtig", explanation: "Incorrect. Wasser besitzt eine Dichteanomalie: Eis hat ein größeres Volumen als flüssiges Wasser." },
-            { label: "B. Falsch", explanation: "Correct! Eis zieht sich beim Schmelzen zusammen; flüssiges Wasser benötigt weniger Platz." }
+            { label: "A. Richtig", explanation: "Falsch. Eis braucht mehr Platz als flüssiges Wasser. Beim Schmelzen zieht es sich zusammen." },
+            { label: "B. Falsch", explanation: "Richtig! Eis ist leichter und braucht mehr Platz. Schmilzt es, wird das Volumen kleiner." }
         ]
     },
     {
         num: 3,
-        text: "3. Den Übergang von gasförmig zu flüssig nennt man Kondensation.",
-        hint: "Achte auf die Wassertropfen, die sich im Bad am kalten Spiegel bilden.",
+        text: "3. Wenn Gas wieder flüssig wird, nennt man das Kondensation.",
+        hint: "Denke an die Wassertropfen am kalten Fenster beim Duschen.",
         correctIndex: 0,
         options: [
-            { label: "A. Richtig", explanation: "Correct! Kühlt Wasserdampf ab, verflüssigt er sich wieder (Kondensation)." },
-            { label: "B. Falsch", explanation: "Incorrect. Das Verflüssigen von Gasen wird fachlich als Kondensation bezeichnet." }
+            { label: "A. Richtig", explanation: "Richtig! Kühlt heißer Wasserdampf ab, wird er wieder zu flüssigen Tropfen." },
+            { label: "B. Falsch", explanation: "Falsch. Das Wort für diesen Vorgang heißt wirklich Kondensation." }
         ]
     },
     {
         num: 4,
-        text: "4. Das Verdampfen von Wasser ist ein chemischer Prozess.",
-        hint: "Überlege, ob sich die Moleküle selbst verändern oder nur deren Abstand zueinander.",
+        text: "4. Wenn Wasser verdampft, entsteht ein völlig neuer Stoff.",
+        hint: "Bleiben die kleinen Wasser-Bausteine (Moleküle) gleich oder verändern sie sich?",
         correctIndex: 1,
         options: [
-            { label: "A. Richtig", explanation: "Incorrect. Es handelt sich um eine physikalische Zustandsänderung. Die H₂O-Moleküle bleiben erhalten." },
-            { label: "B. Falsch", explanation: "Correct! Phasenübergänge sind physikalische Vorgänge, da keine neuen Stoffe entstehen." }
+            { label: "A. Richtig", explanation: "Falsch. Es bleibt immer noch Wasser (H₂O). Es ändert nur seinen Zustand." },
+            { label: "B. Falsch", explanation: "Richtig! Es ist kein neuer Stoff. Die Wasser-Teilchen rücken nur weiter auseinander." }
         ]
     },
     {
         num: 5,
-        text: "5. Wasser kann ausschließlich dann in den gasförmigen Zustand übergehen, wenn exakt der Siedepunkt bei 100 °C erreicht wird.",
-        hint: "Denke an nasse Wäsche auf der Leine oder eine Pfütze nach dem Regen an einem warmen Tag.",
+        text: "5. Wasser wird NUR DANN gasförmig, wenn es kocht (bei 100 °C).",
+        hint: "Denke an nasse Wäsche auf der Wäscheleine oder Pfützen im Sommer.",
         correctIndex: 1,
         options: [
-            { label: "A. Richtig", explanation: "Incorrect. Wasser verdunstet auch kontinuierlich bei Raumtemperatur an der Oberfläche, ohne zu sieden." },
-            { label: "B. Falsch", explanation: "Correct! Verdunsten findet unterhalb des Siedepunkts statt, während Sieden im gesamten Volumen bei 100 °C passiert." }
+            { label: "A. Richtig", explanation: "Falsch. Wasser verdunstet auch langsam bei Raumtemperatur, ohne zu kochen." },
+            { label: "B. Falsch", explanation: "Richtig! Verdunsten klappt auch kalt an der Oberfläche. Kochen passiert erst bei 100 °C im ganzen Topf." }
         ]
     },
     {
         num: 6,
-        text: "6. Der direkte Übergang von fest zu gasförmig heißt Sublimation.",
-        hint: "Erinnere dich an Trockeneis (festes CO₂), das sich ohne zu schmelzen in Rauch auflöst.",
+        text: "6. Wenn ein fester Stoff DIREKT zu Gas wird (ohne vorher flüssig zu werden), heißt das Sublimation.",
+        hint: "Denke an Trockeneis, das sich direkt in Nebel auflöst.",
         correctIndex: 0,
         options: [
-            { label: "A. Richtig", explanation: "Correct! Bei der Sublimation wird die flüssige Phase komplett übersprungen." },
-            { label: "B. Falsch", explanation: "Incorrect. Das Überspringen der flüssigen Phase bezeichnet man tatsächlich als Sublimation." }
+            { label: "A. Richtig", explanation: "Richtig! Der Stoff überspringt den flüssigen Zustand komplett." },
+            { label: "B. Falsch", explanation: "Falsch. Wenn 'fest' sofort zu 'gasförmig' wird, nennt man das Sublimation." }
         ]
     },
     {
         num: 7,
-        text: "7. In einem Festkörper bewegen sich die Teilchen überhaupt nicht mehr.",
-        hint: "Denke daran, dass Teilchen auch im Gitter schwingen können, solange nicht der absolute Nullpunkt erreicht ist.",
+        text: "7. In einem festen Gegenstand (z. B. einem Stein) stehen alle Teilchen völlig still.",
+        hint: "Teilchen wackeln immer ein bisschen, außer es wird extrem kalt.",
         correctIndex: 1,
         options: [
-            { label: "A. Richtig", explanation: "Incorrect. Auch in Festkörpern schwingen die Teilchen um feste Positionen. Erst am absoluten Nullpunkt (-273,15 °C) steht alles still." },
-            { label: "B. Falsch", explanation: "Correct! Festkörperteilchen haben feste Plätze, führen dort aber ständige Schwingungen aus." }
+            { label: "A. Richtig", explanation: "Falsch. Auch in festen Stoffen zittern und wackeln die Teilchen leicht auf ihren Plätzen." },
+            { label: "B. Falsch", explanation: "Richtig! Die Teilchen haben feste Plätze, aber sie zittern immer ein wenig." }
         ]
     },
     {
         num: 8,
-        text: "8. Gase lassen sich im Gegensatz zu Flüssigkeiten leicht komprimieren (zusammendrücken).",
-        hint: "Stelle dir eine Fahrradpumpe vor, deren Öffnung du mit dem Daumen zuhältst.",
+        text: "8. Gase kann man leicht zusammendrücken.",
+        hint: "Denke an eine Fahrradpumpe, wenn du das Loch vorne mit dem Daumen zuhältst.",
         correctIndex: 0,
         options: [
-            { label: "A. Richtig", explanation: "Correct! Da zwischen den Gasteilchen viel Freiraum ist, lässt sich das Volumen leicht verringern." },
-            { label: "B. Falsch", explanation: "Incorrect. Gase sind komprimierbar, wohingegen Flüssigkeiten nahezu inkompressibel sind." }
+            { label: "A. Richtig", explanation: "Richtig! Weil zwischen den Gas-Teilchen viel Platz ist, kann man sie gut quetschen." },
+            { label: "B. Falsch", explanation: "Falsch. Gase lassen sich sehr gut zusammendrücken. Flüssigkeiten dagegen kaum." }
         ]
     },
     {
         num: 9,
-        text: "9. Wenn ein Stoff schmilzt, nimmt er Energie aus der Umgebung auf.",
-        hint: "Warum kühlt ein Eiswürfel ein Getränk ab?",
+        text: "9. Wenn Schokolade schmilzt, nimmt sie Wärme aus der Umgebung auf.",
+        hint: "Warum wird es an deiner Hand kalt, wenn du einen Eiswürfel hältst?",
         correctIndex: 0,
         options: [
-            { label: "A. Richtig", explanation: "Correct! Das Brechen der Gitterstrukturen benötigt thermische Energie (Schmelzwärme), die der Umgebung entzogen wird." },
-            { label: "B. Falsch", explanation: "Incorrect. Schmelzen ist ein endothermer Prozess – er erfordert Energiezufuhr." }
+            { label: "A. Richtig", explanation: "Richtig! Zum Schmelzen braucht jeder Stoff Wärmeenergie von außen." },
+            { label: "B. Falsch", explanation: "Falsch. Schmelzen braucht immer Wärme. Deshalb kühlt der Eiswürfel deine Hand ab." }
         ]
     },
     {
         num: 10,
-        text: "10. Der Gegenprozess zur Sublimation (von gasförmig direkt zu fest) heißt Resublimation.",
-        hint: "Denke an die Entstehung von Raufrost an Fensterscheiben im kalten Winter.",
+        text: "10. Das Gegenteil von Sublimation (also direkt von Gas zu fest) heißt Resublimation.",
+        hint: "Denke an Eisblumen am Fenster im kalten Winter.",
         correctIndex: 0,
         options: [
-            { label: "A. Richtig", explanation: "Correct! Der direkte Übergang von Gas zu Feststoff wird Resublimation oder Deposition genannt." },
-            { label: "B. Falsch", explanation: "Incorrect. Der Fachbegriff für diesen Phasenübergang lautet tatsächlich Resublimation." }
+            { label: "A. Richtig", explanation: "Richtig! Wenn Gas sofort gefriert, nennt man das Resublimation." },
+            { label: "B. Falsch", explanation: "Falsch. Der Fachbegriff für diesen Vorgang heißt tatsächlich Resublimation." }
         ]
     }
 ];
 
-
-    let currentIndex = 0; // Startet bei Frage 5 (Index 1)
-    let isHintVisible = true;
+    let currentIndex = 0; // Startet bei Frage 1 (Index 0)
+    let isHintVisible = false; // Hinweis startet ausgeblendet
 
     function renderQuestion() {
         const q = questions[currentIndex];
         
         // Header & Fortschritt
-  /*      document.getElementById("progress-text").textContent = `${q.num} / 10`;
-        document.getElementById("progress-bar-fill").style.width = `${(q.num / 10) * 100}%`;*/
-        
-// Ändere diesen Teil in renderQuestion():
-document.getElementById("progress-text").textContent = `${q.num} / ${questions.length}`;
-document.getElementById("progress-bar-fill").style.width = `${(q.num / questions.length) * 100}%`;
-
-        
+        document.getElementById("progress-text").textContent = `${q.num} / ${questions.length}`;
+        document.getElementById("progress-bar-fill").style.width = `${(q.num / questions.length) * 100}%`;
         document.getElementById("question-text").textContent = q.text;
         document.getElementById("hint-text").textContent = q.hint;
+
+        // Zustand des Hinweises anpassen
+        applyHintVisibility();
 
         // Antwortoptionen aufbauen
         const container = document.getElementById("options-container");
@@ -342,23 +342,15 @@ document.getElementById("progress-bar-fill").style.width = `${(q.num / questions
             container.appendChild(box);
         });
 
-        // Nav-Button Zustaende
+        // Nav-Buttons Status
         document.getElementById("btn-prev").disabled = currentIndex === 0;
         document.getElementById("btn-next").disabled = currentIndex === questions.length - 1;
-        
-// Am Ende von renderQuestion() hinzufügen:
-document.getElementById("hint-text").style.display = isHintVisible ? "block" : "none";
-document.querySelector(".hint-toggle span:first-child").textContent = isHintVisible ? "Hinweis ausblenden" : "Hinweis anzeigen";
-document.getElementById("hint-arrow").textContent = isHintVisible ? "▲" : "▼";
-
     }
 
     function selectOption(element, isCorrect) {
-        // Alle Optionen in dieser Frage zurücksetzen
         const allBoxes = document.querySelectorAll('.option-box');
         allBoxes.forEach(box => box.className = 'option-box');
 
-        // Ausgewählte Option markieren
         if (isCorrect) {
             element.classList.add('selected-correct');
         } else {
@@ -366,35 +358,15 @@ document.getElementById("hint-arrow").textContent = isHintVisible ? "▲" : "▼
         }
     }
 
-let isHintVisible = false; // Startet ausgeblendet
-
-function toggleHint() {
-    const hintText = document.getElementById("hint-text");
-    const hintToggleText = document.querySelector(".hint-toggle span:first-child");
-    const hintArrow = document.getElementById("hint-arrow");
-
-    isHintVisible = !isHintVisible;
-
-    if (isHintVisible) {
-        hintText.style.display = "block";
-        hintToggleText.textContent = "Hinweis ausblenden";
-        hintArrow.textContent = "▲";
-    } else {
-        hintText.style.display = "none";
-        hintToggleText.textContent = "Hinweis anzeigen";
-        hintArrow.textContent = "▼";
+    function toggleHint() {
+        isHintVisible = !isHintVisible;
+        applyHintVisibility();
     }
-}
 
-
-//let isHintVisible = false; // Startet ausgeblendet
-
-/*    function toggleHint() {
+    function applyHintVisibility() {
         const hintText = document.getElementById("hint-text");
         const hintToggleText = document.querySelector(".hint-toggle span:first-child");
         const hintArrow = document.getElementById("hint-arrow");
-
-        isHintVisible = !isHintVisible;
 
         if (isHintVisible) {
             hintText.style.display = "block";
@@ -405,7 +377,7 @@ function toggleHint() {
             hintToggleText.textContent = "Hinweis anzeigen";
             hintArrow.textContent = "▼";
         }
-    }*/
+    }
 
     function prevQuestion() {
         if (currentIndex > 0) {
@@ -421,7 +393,7 @@ function toggleHint() {
         }
     }
 
-    // Initiales Rendern
+    // Initiales Rendern beim Laden der Seite
     renderQuestion();
 </script>
 

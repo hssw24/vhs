@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aggregatzustände Quiz</title>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --text-color: #e0e0e0;
+            --text-secondary: #aaaaaa;
+            --box-bg-color: #2c2c2e;
+            --correct-bg-color: #1c3b1e;
+            --correct-border: #2e6b32;
+            --correct-text-color: #b6d7a8;
+            --incorrect-bg-color: #4a151b;
+            --incorrect-border: #8b2500;
+            --incorrect-text-color: #f4cccc;
+            --btn-blue: #0d6efd;
+            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: var(--font-family);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .quiz-container {
+            width: 100%;
+            max-width: 500px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .header {
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        /* Progress Bar */
+        .progress-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .progress-bar-container {
+            flex-grow: 1;
+            height: 6px;
+            background-color: #333;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background-color: #0d6efd;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        /* Question */
+        .question-text {
+            font-size: 18px;
+            line-height: 1.4;
+            font-weight: 500;
+        }
+
+        /* Options */
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option-box {
+            background-color: var(--box-bg-color);
+            padding: 16px;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .option-label {
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .explanation {
+            display: none;
+            font-size: 14px;
+            margin-top: 10px;
+            line-height: 1.4;
+        }
+
+        /* States */
+        .option-box.selected-correct {
+            background-color: var(--correct-bg-color);
+            border-color: var(--correct-border);
+        }
+        .option-box.selected-correct .option-label { color: var(--correct-text-color); }
+        .option-box.selected-correct .explanation { display: block; color: var(--correct-text-color); }
+
+        .option-box.selected-incorrect {
+            background-color: var(--incorrect-bg-color);
+            border-color: var(--incorrect-border);
+        }
+        .option-box.selected-incorrect .option-label { color: var(--incorrect-text-color); }
+        .option-box.selected-incorrect .explanation { display: block; color: var(--incorrect-text-color); }
+
+        /* Hint Section */
+        .hint-section {
+            margin-top: 5px;
+        }
+
+        .hint-toggle {
+            cursor: pointer;
+            color: var(--text-secondary);
+            font-size: 15px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            user-select: none;
+        }
+
+        .hint-text {
+            margin-top: 10px;
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.4;
+            display: none; /* Standardmäßig ausgeblendet */
+        }
+
+        /* Navigation Buttons */
+        .nav-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .btn {
+            border: none;
+            border-radius: 20px;
+            padding: 10px 24px;
+            font-size: 15px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .btn-secondary {
+            background-color: var(--box-bg-color);
+            color: var(--text-color);
+        }
+
+        .btn-primary {
+            background-color: var(--btn-blue);
+            color: white;
+        }
+
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+
+<div class="quiz-container">
+    <div class="header">Aggregatzustände – Wahr oder Falsch?</div>
+
+    <div class="progress-header">
+        <div class="progress-bar-container">
+            <div class="progress-bar-fill" id="progress-bar-fill"></div>
+        </div>
+        <span class="progress-text" id="progress-text">1 / 10</span>
+    </div>
+
+    <div class="question-text" id="question-text"></div>
+
+    <div class="options-container" id="options-container"></div>
+
+    <!-- Hinweis-Bereich -->
+    <div class="hint-section">
+        <div class="hint-toggle" onclick="toggleHint()">
+            <span>Hinweis anzeigen</span>
+            <span id="hint-arrow">▼</span>
+        </div>
+        <div class="hint-text" id="hint-text"></div>
+    </div>
+
+    <div class="nav-buttons">
+        <button class="btn btn-secondary" id="btn-prev" onclick="prevQuestion()">Zurück</button>
+        <button class="btn btn-primary" id="btn-next" onclick="nextQuestion()">Weiter</button>
+    </div>
+</div>
+
+<script>
+    const questions = [
+        {
+            num: 1,
+            text: "1. Wasser siedet bei Meereshöhe immer bei exakt 100 °C.",
+            hint: "Überlege, wie sich der Luftdruck verändert, wenn man auf einen hohen Berg steigt.",
+            correctIndex: 0,
+            options: [
+                { label: "A. Richtig", explanation: "Correct! Unter normalem Atmosphärendruck (1013 hPa) liegt der Siedepunkt von Wasser bei 100 °C." },
+                { label: "B. Falsch", explanation: "Incorrect. Auf Meereshöhe stimmt dieser Wert exakt; erst bei verändertem Druck weicht er ab." }
+            ]
+        },
+        {
+            num: 2,
+            text: "2. Wenn Eis schmilzt, nimmt das Volumen des Wassers zu.",
+            hint: "Denke an die Dichteanomalie von Wasser oder daran, warum Eiswürfel im Glas oben schwimmen.",
+            correctIndex: 1,
+            options: [
+                { label: "A. Richtig", explanation: "Incorrect. Wasser besitzt eine Dichteanomalie: Eis hat ein größeres Volumen als flüssiges Wasser." },
+                { label: "B. Falsch", explanation: "Correct! Eis zieht sich beim Schmelzen zusammen; flüssiges Wasser benötigt weniger Platz." }
+            ]
+        },
+        {
+            num: 3,
+            text: "3. Den Übergang von gasförmig zu flüssig nennt man Kondensation.",
+            hint: "Achte auf die Wassertropfen, die sich im Bad am kalten Spiegel bilden.",
+            correctIndex: 0,
+            options: [
+                { label: "A. Richtig", explanation: "Correct! Kühlt Wasserdampf ab, verflüssigt er sich wieder (Kondensation)." },
+                { label: "B. Falsch", explanation: "Incorrect. Das Verflüssigen von Gasen wird fachlich als Kondensation bezeichnet." }
+            ]
+        },
+        {
+            num: 4,
+            text: "4. Das Verdampfen von Wasser ist ein chemischer Prozess.",
+            hint: "Überlege, ob sich die Moleküle selbst verändern oder nur deren Abstand zueinander.",
+            correctIndex: 1,
+            options: [
+                { label: "A. Richtig", explanation: "Incorrect. Es handelt sich um eine physikalische Zustandsänderung. Die H₂O-Moleküle bleiben erhalten." },
+                { label: "B. Falsch", explanation: "Correct! Phasenübergänge sind physikalische Vorgänge, da keine neuen Stoffe entstehen." }
+            ]
+        },
+        {
+            num: 5,
+            text: "5. Wasser kann ausschließlich dann in den gasförmigen Zustand übergehen, wenn exakt der Siedepunkt bei 100 °C erreicht wird.",
+            hint: "Denke an nasse Wäsche auf der Leine oder eine Pfütze nach dem Regen an einem warmen Tag.",
+            correctIndex: 1,
+            options: [
+                { label: "A. Richtig", explanation: "Incorrect. Wasser verdunstet auch kontinuierlich bei Raumtemperatur an der Oberfläche, ohne zu sieden." },
+                { label: "B. Falsch", explanation: "Correct! Verdunsten findet unterhalb des Siedepunkts statt, während Sieden im gesamten Volumen bei 100 °C passiert." }
+            ]
+        },
+        {
+            num: 6,
+            text: "6. Der direkte Übergang von fest zu gasförmig heißt Sublimation.",
+            hint: "Erinnere dich an Trockeneis (festes CO₂), das sich ohne zu schmelzen in Rauch auflöst.",
+            correctIndex: 0,
+            options: [
+                { label: "A. Richtig", explanation: "Correct! Bei der Sublimation wird die flüssige Phase komplett übersprungen." },
+                { label: "B. Falsch", explanation: "Incorrect. Das Überspringen der flüssigen Phase bezeichnet man tatsächlich als Sublimation." }
+            ]
+        },
+        {
+            num: 7,
+            text: "7. In einem Festkörper bewegen sich die Teilchen überhaupt nicht mehr.",
+            hint: "Denke daran, dass Teilchen auch im Gitter schwingen können, solange nicht der absolute Nullpunkt erreicht ist.",
+            correctIndex: 1,
+            options: [
+                { label: "A. Richtig", explanation: "Incorrect. Auch in Festkörpern schwingen die Teilchen um feste Positionen. Erst am absoluten Nullpunkt (-273,15 °C) steht alles still." },
+                { label: "B. Falsch", explanation: "Correct! Festkörperteilchen haben feste Plätze, führen dort aber ständige Schwingungen aus." }
+            ]
+        },
+        {
+            num: 8,
+            text: "8. Gase lassen sich im Gegensatz zu Flüssigkeiten leicht komprimieren (zusammendrücken).",
+            hint: "Stelle dir eine Fahrradpumpe vor, deren Öffnung du mit dem Daumen zuhältst.",
+            correctIndex: 0,
+            options: [
+                { label: "A. Richtig", explanation: "Correct! Da zwischen den Gasteilchen viel Freiraum ist, lässt sich das Volumen leicht verringern." },
+                { label: "B. Falsch", explanation: "Incorrect. Gase sind komprimierbar, wohingegen Flüssigkeiten nahezu inkompressibel sind." }
+            ]
+        },
+        {
+            num: 9,
+            text: "9. Wenn ein Stoff schmilzt, nimmt er Energie aus der Umgebung auf.",
+            hint: "Warum kühlt ein Eiswürfel ein Getränk ab?",
+            correctIndex: 0,
+            options: [
+                { label: "A. Richtig", explanation: "Correct! Das Brechen der Gitterstrukturen benötigt thermische Energie (Schmelzwärme), die der Umgebung entzogen wird." },
+                { label: "B. Falsch", explanation: "Incorrect. Schmelzen ist ein endothermer Prozess – er erfordert Energiezufuhr." }
+            ]
+        },
+        {
+            num: 10,
+            text: "10. Der Gegenprozess zur Sublimation (von gasförmig direkt zu fest) heißt Resublimation.",
+            hint: "Denke an die Entstehung von Raufrost an Fensterscheiben im kalten Winter.",
+            correctIndex: 0,
+            options: [
+                { label: "A. Richtig", explanation: "Correct! Der direkte Übergang von Gas zu Feststoff wird Resublimation oder Deposition genannt." },
+                { label: "B. Falsch", explanation: "Incorrect. Der Fachbegriff für diesen Phasenübergang lautet tatsächlich Resublimation." }
+            ]
+        }
+    ];
+
+    let currentIndex = 0; // Startet bei Frage 1 (Index 0)
+    let isHintVisible = false; // Hinweis startet ausgeblendet
+
+    function renderQuestion() {
+        const q = questions[currentIndex];
+        
+        // Header & Fortschritt
+        document.getElementById("progress-text").textContent = `${q.num} / ${questions.length}`;
+        document.getElementById("progress-bar-fill").style.width = `${(q.num / questions.length) * 100}%`;
+        document.getElementById("question-text").textContent = q.text;
+        document.getElementById("hint-text").textContent = q.hint;
+
+        // Zustand des Hinweises anpassen
+        applyHintVisibility();
+
+        // Antwortoptionen aufbauen
+        const container = document.getElementById("options-container");
+        container.innerHTML = "";
+
+        q.options.forEach((opt, idx) => {
+            const box = document.createElement("div");
+            box.className = "option-box";
+            box.onclick = () => selectOption(box, idx === q.correctIndex);
+
+            box.innerHTML = `
+                <div class="option-label">${opt.label}</div>
+                <div class="explanation">${opt.explanation}</div>
+            `;
+            container.appendChild(box);
+        });
+
+        // Nav-Buttons Status
+        document.getElementById("btn-prev").disabled = currentIndex === 0;
+        document.getElementById("btn-next").disabled = currentIndex === questions.length - 1;
+    }
+
+    function selectOption(element, isCorrect) {
+        const allBoxes = document.querySelectorAll('.option-box');
+        allBoxes.forEach(box => box.className = 'option-box');
+
+        if (isCorrect) {
+            element.classList.add('selected-correct');
+        } else {
+            element.classList.add('selected-incorrect');
+        }
+    }
+
+    function toggleHint() {
+        isHintVisible = !isHintVisible;
+        applyHintVisibility();
+    }
+
+    function applyHintVisibility() {
+        const hintText = document.getElementById("hint-text");
+        const hintToggleText = document.querySelector(".hint-toggle span:first-child");
+        const hintArrow = document.getElementById("hint-arrow");
+
+        if (isHintVisible) {
+            hintText.style.display = "block";
+            hintToggleText.textContent = "Hinweis ausblenden";
+            hintArrow.textContent = "▲";
+        } else {
+            hintText.style.display = "none";
+            hintToggleText.textContent = "Hinweis anzeigen";
+            hintArrow.textContent = "▼";
+        }
+    }
+
+    function prevQuestion() {
+        if (currentIndex > 0) {
+            currentIndex--;
+            renderQuestion();
+        }
+    }
+
+    function nextQuestion() {
+        if (currentIndex < questions.length - 1) {
+            currentIndex++;
+            renderQuestion();
+        }
+    }
+
+    // Initiales Rendern beim Laden der Seite
+    renderQuestion();
+</script>
+
+</body>
+</html>
