@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aggregatzustände Quiz</title>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --text-color: #e0e0e0;
+            --text-secondary: #aaaaaa;
+            --box-bg-color: #2c2c2e;
+            --correct-bg-color: #1c3b1e;
+            --correct-border: #2e6b32;
+            --correct-text-color: #b6d7a8;
+            --incorrect-bg-color: #4a151b;
+            --incorrect-border: #8b2500;
+            --incorrect-text-color: #f4cccc;
+            --btn-blue: #0d6efd;
+            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: var(--font-family);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .quiz-container {
+            width: 100%;
+            max-width: 500px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .header {
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        /* Progress Bar */
+        .progress-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .progress-bar-container {
+            flex-grow: 1;
+            height: 6px;
+            background-color: #333;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background-color: #0d6efd;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        /* Question */
+        .question-text {
+            font-size: 18px;
+            line-height: 1.4;
+            font-weight: 500;
+        }
+
+        /* Options */
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option-box {
+            background-color: var(--box-bg-color);
+            padding: 16px;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .option-label {
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .explanation {
+            display: none;
+            font-size: 14px;
+            margin-top: 10px;
+            line-height: 1.4;
+        }
+
+        /* States */
+        .option-box.selected-correct {
+            background-color: var(--correct-bg-color);
+            border-color: var(--correct-border);
+        }
+        .option-box.selected-correct .option-label { color: var(--correct-text-color); }
+        .option-box.selected-correct .explanation { display: block; color: var(--correct-text-color); }
+
+        .option-box.selected-incorrect {
+            background-color: var(--incorrect-bg-color);
+            border-color: var(--incorrect-border);
+        }
+        .option-box.selected-incorrect .option-label { color: var(--incorrect-text-color); }
+        .option-box.selected-incorrect .explanation { display: block; color: var(--incorrect-text-color); }
+
+        /* Hint Section */
+        .hint-section {
+            margin-top: 5px;
+        }
+
+        .hint-toggle {
+            cursor: pointer;
+            color: var(--text-secondary);
+            font-size: 15px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            user-select: none;
+        }
+
+        .hint-text {
+            margin-top: 10px;
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.4;
+            display: none; /* Standardmäßig ausgeblendet */
+        }
+
+        /* Navigation Buttons */
+        .nav-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .btn {
+            border: none;
+            border-radius: 20px;
+            padding: 10px 24px;
+            font-size: 15px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .btn-secondary {
+            background-color: var(--box-bg-color);
+            color: var(--text-color);
+        }
+
+        .btn-primary {
+            background-color: var(--btn-blue);
+            color: white;
+        }
+
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+
+<div class="quiz-container">
+    <div class="header">Aggregatzustände – Wahr oder Falsch?</div>
+
+    <div class="progress-header">
+        <div class="progress-bar-container">
+            <div class="progress-bar-fill" id="progress-bar-fill"></div>
+        </div>
+        <span class="progress-text" id="progress-text">1 / 10</span>
+    </div>
+
+    <div class="question-text" id="question-text"></div>
+
+    <div class="options-container" id="options-container"></div>
+
+    <!-- Hinweis-Bereich -->
+    <div class="hint-section">
+        <div class="hint-toggle" onclick="toggleHint()">
+            <span>Hinweis anzeigen</span>
+            <span id="hint-arrow">▼</span>
+        </div>
+        <div class="hint-text" id="hint-text"></div>
+    </div>
+
+    <div class="nav-buttons">
+        <button class="btn btn-secondary" id="btn-prev" onclick="prevQuestion()">Zurück</button>
+        <button class="btn btn-primary" id="btn-next" onclick="nextQuestion()">Weiter</button>
+    </div>
+</div>
+
+<script>
+const questions = [
+    {
+        num: 11,
+        text: "11. Je höher die Temperatur eines Stoffes ist, desto schneller bewegen sich seine Teilchen.",
+        hint: "Stelle dir vor, die Teilchen bekommen durch Wärme mehr Energie zum Flitzen.",
+        correctIndex: 0,
+        options: [
+            { label: "A. Richtig", explanation: "Richtig! Wärme ist Bewegung: Höhere Temperatur bedeutet immer schnellere Teilchen." },
+            { label: "B. Falsch", explanation: "Falsch. Temperatur misst genau diese Teilchenbewegung – wird es wärmer, werden sie schneller." }
+        ]
+    },
+    {
+        num: 12,
+        text: "12. Der kälteste mögliche Zustand im Universum liegt bei 0 Grad Celsius (0 °C).",
+        hint: "Gibt es auf der Kelvin-Skala noch tiefere Temperaturen?",
+        correctIndex: 1,
+        options: [
+            { label: "A. Richtig", explanation: "Falsch. 0 °C ist nur der Gefrierpunkt von Wasser. Der kälteste Punkt liegt bei -273,15 °C (0 Kelvin)." },
+            { label: "B. Falsch", explanation: "Richtig! Der absolute Nullpunkt liegt bei -273,15 °C. Dort stehen alle Teilchen still." }
+        ]
+    },
+    {
+        num: 13,
+        text: "13. Auf der Kelvin-Skala gibt es keine negativen Zahlen (kein Minus).",
+        hint: "Kelvin beginnt direkt beim absoluten Nullpunkt.",
+        correctIndex: 0,
+        options: [
+            { label: "A. Richtig", explanation: "Richtig! 0 Kelvin ist das absolute Minimum. Kälter geht es nicht, also gibt es kein Minus." },
+            { label: "B. Falsch", explanation: "Falsch. Die Kelvin-Skala startet bei 0 (absoluter Nullpunkt) und kennt nur positive Werte." }
+        ]
+    },
+    {
+        num: 14,
+        text: "14. Wasser speichert Wärme besser als Eisen.",
+        hint: "Vergleiche eine Wärmflasche mit einer heißen Metallstange – was bleibt länger warm?",
+        correctIndex: 0,
+        options: [
+            { label: "A. Richtig", explanation: "Richtig! Wasser hat eine sehr hohe Wärmekapazität. Es nimmt viel Wärme auf und kühlt langsam ab." },
+            { label: "B. Falsch", explanation: "Falsch. Wasser speichert Energie extrem gut – viel besser als die meisten Metalle." }
+        ]
+    },
+    {
+        num: 15,
+        text: "15. Zwischen den Teilchen von Gasen ist meistens nur Luft.",
+        hint: "Aus was besteht Luft eigentlich selbst?",
+        correctIndex: 1,
+        options: [
+            { label: "A. Richtig", explanation: "Falsch. Luft ist selbst ein Gemisch aus Gasen. Zwischen Gas-Teilchen ist einfach gar nichts (absolutes Nichts)." },
+            { label: "B. Falsch", explanation: "Richtig! Zwischen den Teilchen eines Gases befindet sich leerer Raum, keine andere Materie." }
+        ]
+    },
+    {
+        num: 16,
+        text: "16. Wenn sich ein Stoff erwärmt, dehnt er sich in der Regel aus.",
+        hint: "Warum bauen Ingenieure kleine Lücken in Brücken oder Schienen ein?",
+        correctIndex: 0,
+        options: [
+            { label: "A. Richtig", explanation: "Richtig! Weil die Teilchen wilder stoßen, brauchen sie mehr Platz – der Stoff dehnt sich aus." },
+            { label: "B. Falsch", explanation: "Falsch. Fast alle Stoffe dehnen sich bei Erwärmung aus, da die Teilchen mehr Raum beanspruchen." }
+        ]
+    },
+    {
+        num: 17,
+        text: "17. Ein Temperaturunterschied von 1 Grad Celsius ist genau derselbe Schritt wie 1 Kelvin.",
+        hint: "Die Abstände auf beiden Skalen sind gleich groß, nur der Startpunkt ist verschoben.",
+        correctIndex: 0,
+        options: [
+            { label: "A. Richtig", explanation: "Richtig! Wird es um 1 °C wärmer, steigt die Temperatur auch um genau 1 Kelvin." },
+            { label: "B. Falsch", explanation: "Falsch. Die Schritte sind exakt gleich groß. 20 °C warm bedeutet einfach 293,15 Kelvin." }
+        ]
+    },
+    {
+        num: 18,
+        text: "18. Stoffe mit hoher Wärmekapazität werden sehr schnell heiß, wenn man sie erhitzt.",
+        hint: "Braucht man viel Energie, um die Temperatur zu erhöhen, dauert es länger.",
+        correctIndex: 1,
+        options: [
+            { label: "A. Richtig", explanation: "Falsch. Hohe Wärmekapazität heißt: Der Stoff braucht SEHR VIEL Energie, um überhaupt wärmer zu werden." },
+            { label: "B. Falsch", explanation: "Richtig! Je höher die Wärmekapazität, desto mehr Energie muss man zuführen, damit die Temperatur steigt." }
+        ]
+    },
+    {
+        num: 19,
+        text: "19. In Flüssigkeiten sind die Teilchen fest aneinandergekettet und können ihre Plätze nicht tauschen.",
+        hint: "Können Flüssigkeiten fließen und sich an Gefäße anpassen?",
+        correctIndex: 1,
+        options: [
+            { label: "A. Richtig", explanation: "Falsch. In Flüssigkeiten berühren sich die Teilchen zwar, sie können aber leicht aneinander vorbeigleiten." },
+            { label: "B. Falsch", explanation: "Richtig! Nur in Festkörpern haben Teilchen feste Plätze. In Flüssigkeiten können sie sich frei bewegen." }
+        ]
+    },
+    {
+        num: 20,
+        text: "20. Der Siedepunkt von Wasser liegt auf der Kelvin-Skala bei etwa 373 Kelvin.",
+        hint: "Rechne: 100 °C + 273 (Nullpunkt-Verschiebung).",
+        correctIndex: 0,
+        options: [
+            { label: "A. Richtig", explanation: "Richtig! 0 °C entspricht ca. 273 K. Zählt man 100 °C dazu, landet man bei ca. 373 K." },
+            { label: "B. Falsch", explanation: "Falsch. Da 0 °C = 273,15 K sind, siedet Wasser bei 100 °C exakt bei 373,15 Kelvin." }
+        ]
+    }
+];
+
+
+    let currentIndex = 0; // Startet bei Frage 1 (Index 0)
+    let isHintVisible = false; // Hinweis startet ausgeblendet
+
+    function renderQuestion() {
+        const q = questions[currentIndex];
+        
+        // Header & Fortschritt
+        document.getElementById("progress-text").textContent = `${q.num} / ${questions.length}`;
+        document.getElementById("progress-bar-fill").style.width = `${(q.num / questions.length) * 100}%`;
+        document.getElementById("question-text").textContent = q.text;
+        document.getElementById("hint-text").textContent = q.hint;
+
+        // Zustand des Hinweises anpassen
+        applyHintVisibility();
+
+        // Antwortoptionen aufbauen
+        const container = document.getElementById("options-container");
+        container.innerHTML = "";
+
+        q.options.forEach((opt, idx) => {
+            const box = document.createElement("div");
+            box.className = "option-box";
+            box.onclick = () => selectOption(box, idx === q.correctIndex);
+
+            box.innerHTML = `
+                <div class="option-label">${opt.label}</div>
+                <div class="explanation">${opt.explanation}</div>
+            `;
+            container.appendChild(box);
+        });
+
+        // Nav-Buttons Status
+        document.getElementById("btn-prev").disabled = currentIndex === 0;
+        document.getElementById("btn-next").disabled = currentIndex === questions.length - 1;
+    }
+
+    function selectOption(element, isCorrect) {
+        const allBoxes = document.querySelectorAll('.option-box');
+        allBoxes.forEach(box => box.className = 'option-box');
+
+        if (isCorrect) {
+            element.classList.add('selected-correct');
+        } else {
+            element.classList.add('selected-incorrect');
+        }
+    }
+
+    function toggleHint() {
+        isHintVisible = !isHintVisible;
+        applyHintVisibility();
+    }
+
+    function applyHintVisibility() {
+        const hintText = document.getElementById("hint-text");
+        const hintToggleText = document.querySelector(".hint-toggle span:first-child");
+        const hintArrow = document.getElementById("hint-arrow");
+
+        if (isHintVisible) {
+            hintText.style.display = "block";
+            hintToggleText.textContent = "Hinweis ausblenden";
+            hintArrow.textContent = "▲";
+        } else {
+            hintText.style.display = "none";
+            hintToggleText.textContent = "Hinweis anzeigen";
+            hintArrow.textContent = "▼";
+        }
+    }
+
+    function prevQuestion() {
+        if (currentIndex > 0) {
+            currentIndex--;
+            renderQuestion();
+        }
+    }
+
+    function nextQuestion() {
+        if (currentIndex < questions.length - 1) {
+            currentIndex++;
+            renderQuestion();
+        }
+    }
+
+    // Initiales Rendern beim Laden der Seite
+    renderQuestion();
+</script>
+
+</body>
+</html>
