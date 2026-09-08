@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aggregatzustände Quiz</title>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --text-color: #e0e0e0;
+            --text-secondary: #aaaaaa;
+            --box-bg-color: #2c2c2e;
+            --correct-bg-color: #1c3b1e;
+            --correct-border: #2e6b32;
+            --correct-text-color: #b6d7a8;
+            --incorrect-bg-color: #4a151b;
+            --incorrect-border: #8b2500;
+            --incorrect-text-color: #f4cccc;
+            --btn-blue: #0d6efd;
+            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: var(--font-family);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .quiz-container {
+            width: 100%;
+            max-width: 500px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .header {
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        /* Progress Bar */
+        .progress-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .progress-bar-container {
+            flex-grow: 1;
+            height: 6px;
+            background-color: #333;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background-color: #0d6efd;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        /* Question */
+        .question-text {
+            font-size: 18px;
+            line-height: 1.4;
+            font-weight: 500;
+        }
+
+        /* Options */
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option-box {
+            background-color: var(--box-bg-color);
+            padding: 16px;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .option-label {
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .explanation {
+            display: none;
+            font-size: 14px;
+            margin-top: 10px;
+            line-height: 1.4;
+        }
+
+        /* States */
+        .option-box.selected-correct {
+            background-color: var(--correct-bg-color);
+            border-color: var(--correct-border);
+        }
+        .option-box.selected-correct .option-label { color: var(--correct-text-color); }
+        .option-box.selected-correct .explanation { display: block; color: var(--correct-text-color); }
+
+        .option-box.selected-incorrect {
+            background-color: var(--incorrect-bg-color);
+            border-color: var(--incorrect-border);
+        }
+        .option-box.selected-incorrect .option-label { color: var(--incorrect-text-color); }
+        .option-box.selected-incorrect .explanation { display: block; color: var(--incorrect-text-color); }
+
+        /* Hint Section */
+        .hint-section {
+            margin-top: 5px;
+        }
+
+        .hint-toggle {
+            cursor: pointer;
+            color: var(--text-secondary);
+            font-size: 15px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            user-select: none;
+        }
+
+        .hint-text {
+            margin-top: 10px;
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.4;
+            display: none; /* Standardmäßig ausgeblendet */
+        }
+
+        /* Navigation Buttons */
+        .nav-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .btn {
+            border: none;
+            border-radius: 20px;
+            padding: 10px 24px;
+            font-size: 15px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .btn-secondary {
+            background-color: var(--box-bg-color);
+            color: var(--text-color);
+        }
+
+        .btn-primary {
+            background-color: var(--btn-blue);
+            color: white;
+        }
+
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+
+<div class="quiz-container">
+    <div class="header">Aggregatzustände – Wahr oder Falsch?</div>
+
+    <div class="progress-header">
+        <div class="progress-bar-container">
+            <div class="progress-bar-fill" id="progress-bar-fill"></div>
+        </div>
+        <span class="progress-text" id="progress-text">1 / 10</span>
+    </div>
+
+    <div class="question-text" id="question-text"></div>
+
+    <div class="options-container" id="options-container"></div>
+
+    <!-- Hinweis-Bereich -->
+    <div class="hint-section">
+        <div class="hint-toggle" onclick="toggleHint()">
+            <span>Hinweis anzeigen</span>
+            <span id="hint-arrow">▼</span>
+        </div>
+        <div class="hint-text" id="hint-text"></div>
+    </div>
+
+    <div class="nav-buttons">
+        <button class="btn btn-secondary" id="btn-prev" onclick="prevQuestion()">Zurück</button>
+        <button class="btn btn-primary" id="btn-next" onclick="nextQuestion()">Weiter</button>
+    </div>
+</div>
+
+<script>
+const questions = [
+    {
+        num: 21,
+        text: "21. Wärme fließt von selbst immer vom kälteren zum wärmeren Körper.",
+        hint: "Was passiert, wenn du einen kalten Löffel in heißen Tee steckst?",
+        correctIndex: 1,
+        options: [
+            { label: "A. Richtig", explanation: "Falsch. Wärme fließt von selbst immer vom WÄRMEREN zum KÄLTEREN Gegenstand, bis beide gleich warm sind." },
+            { label: "B. Falsch", explanation: "Richtig! Der wärmere Körper gibt immer Energie an den kälteren Körper ab, nie umgekehrt." }
+        ]
+    },
+    {
+        num: 22,
+        text: "22. Wenn Wasser zu Eis gefriert, gibt es Wärme an die Umgebung ab.",
+        hint: "Gefrieren ist das Gegenteil von Schmelzen – wo muss die Energie hin?",
+        correctIndex: 0,
+        options: [
+            { label: "A. Richtig", explanation: "Richtig! Beim Gefrieren wird sogenannte Erstarrungswärme an die Umgebung abgegeben." },
+            { label: "B. Falsch", explanation: "Falsch. Schmelzen braucht Wärme, aber beim Gefrieren gibt das Wasser Wärme ab." }
+        ]
+    },
+    {
+        num: 23,
+        text: "23. Metalle leiten Wärme meistens sehr gut.",
+        hint: "Denke an einen Metalllöffel in einem heißen Kochtopf.",
+        correctIndex: 0,
+        options: [
+            { label: "A. Richtig", explanation: "Richtig! Metalle sind hervorragende Wärmeleiter, weil ihre Teilchen die Bewegung schnell weitergeben." },
+            { label: "B. Falsch", explanation: "Falsch. Metalle leiten Wärme sehr schnell, weshalb Topfgriffe oft aus Kunststoff gefertigt sind." }
+        ]
+    },
+    {
+        num: 24,
+        text: "24. Styropor und Holz leiten Wärme sehr schlecht.",
+        hint: "Warum nutzt man Styroporboxen zum Transportieren von Eis oder warmem Essen?",
+        correctIndex: 0,
+        options: [
+            { label: "A. Richtig", explanation: "Richtig! Sie sind gute Wärmedämmstoffe (Isolatoren) und leiten Wärme nur sehr langsam." },
+            { label: "B. Falsch", explanation: "Falsch. Stoffe wie Holz, Luft und Styropor leiten Wärme extrem schlecht und dämmen deshalb gut." }
+        ]
+    },
+    {
+        num: 25,
+        text: "25. Wenn man Wasser auf 4 °C abkühlt, zieht es sich auf sein kleinstes Volumen zusammen.",
+        hint: "Erinnere dich an das Thema Dichteanomalie des Wassers.",
+        correctIndex: 0,
+        options: [
+            { label: "A. Richtig", explanation: "Richtig! Bei exakt 4 °C hat flüssiges Wasser seine höchste Dichte und braucht am wenigsten Platz." },
+            { label: "B. Falsch", explanation: "Falsch. Bei 4 °C ist Wasser am schwersten und dichtesten – kühlt es weiter ab, dehnt es sich wieder aus." }
+        ]
+    },
+    {
+        num: 26,
+        text: "26. Warum frieren tiefe Seen im Winter nicht von unten nach oben zu?",
+        hint: "Wo sammelt sich das 4 °C schwere Wasser im See?",
+        correctIndex: 0,
+        options: [
+            { label: "A. Weil 4 °C warmes Wasser am schwersten ist und ganz unten liegt.", explanation: "Richtig! Das dichteste Wasser (4 °C) sinkt nach unten, deshalb schwimmt das kältere Eis oben." },
+            { label: "B. Weil Fische das Wasser unten ständig umrühren.", explanation: "Falsch. Das liegt an der Dichteanomalie: 4 °C warmes Wasser ist am schwersten und sammelt sich am Grund." }
+        ]
+    },
+    {
+        num: 27,
+        text: "27. In den USA misst man die Temperatur meistens in Fahrenheit statt in Grad Celsius.",
+        hint: "Haste schon mal US-Wetterberichte gesehen?",
+        correctIndex: 0,
+        options: [
+            { label: "A. Richtig", explanation: "Richtig! In den USA nutzt man im Alltag die Fahrenheit-Skala (°F)." },
+            { label: "B. Falsch", explanation: "Falsch. Fahrenheit ist in den USA die Standard-Einheit im Alltag." }
+        ]
+    },
+    {
+        num: 28,
+        text: "28. 0 Grad Celsius (0 °C) entsprechen 0 Grad Fahrenheit (0 °F).",
+        hint: "Schmilzt Eis auch bei 0 °F?",
+        correctIndex: 1,
+        options: [
+            { label: "A. Richtig", explanation: "Falsch. 0 °C entsprechen 32 °F. Die beiden Skalen haben ganz unterschiedliche Nullpunkte." },
+            { label: "B. Falsch", explanation: "Richtig! 0 °C sind exakt 32 °F. 0 °F ist noch viel kälter (ca. -18 °C)." }
+        ]
+    },
+    {
+        num: 29,
+        text: "29. Warme Luft ist leichter als kalte Luft und steigt deshalb nach oben.",
+        hint: "Denke an das Funktionsprinzip eines Heißluftballons.",
+        correctIndex: 0,
+        options: [
+            { label: "A. Richtig", explanation: "Richtig! Warme Luft dehnt sich aus, hat eine geringere Dichte und steigt auf (Wärmeströmung)." },
+            { label: "B. Falsch", explanation: "Falsch. Da sich warme Luft ausdehnt, wird sie leichter pro Volumen und steigt nach oben." }
+        ]
+    },
+    {
+        num: 30,
+        text: "30. Die Sonne erwärmt die Erde hauptsächlich durch Wärmeleitung.",
+        hint: "Gibt es zwischen Sonne und Erde Teilchen, die Wärme weiterleiten können?",
+        correctIndex: 1,
+        options: [
+            { label: "A. Richtig", explanation: "Falsch. Im Weltall herrscht Vakuum (keine Teilchen). Die Sonne erwärmt uns durch Wärmestrahlung." },
+            { label: "B. Falsch", explanation: "Richtig! Da im Weltall fast keine Teilchen sind, gelangt die Energie als Wärmestrahlung (Licht/Infarot) zu uns." }
+        ]
+    },
+    {
+        num: 31,
+        text: "31. Wenn Flüssigkeiten verdunsten, kühlt sich die verbleibende Flüssigkeit ab.",
+        hint: "Warum friert man im Sommer, wenn man nass aus dem Schwimmbecken kommt?",
+        correctIndex: 0,
+        options: [
+            { label: "A. Richtig", explanation: "Richtig! Nur die schnellsten (wärmsten) Teilchen entweichen. Das nennt man Verdunstungskälte." },
+            { label: "B. Falsch", explanation: "Falsch. Da die energiereichsten Teilchen verdunsten, verliert die restliche Flüssigkeit Wärme." }
+        ]
+    },
+    {
+        num: 32,
+        text: "32. Der Mensch nutzt Verdunstungskälte beim Schwitzen, um den Körper zu kühlen.",
+        hint: "Was passiert mit dem Schweiß auf der Haut?",
+        correctIndex: 0,
+        options: [
+            { label: "A. Richtig", explanation: "Richtig! Schweiß verdunstet auf der Haut und entzieht dem Körper dabei überschüssige Wärme." },
+            { label: "B. Falsch", explanation: "Falsch. Schwitzen kühlt den Körper genau durch das Prinzip der Verdunstungskälte." }
+        ]
+    },
+    {
+        num: 33,
+        text: "33. Wenn man den Druck erhöht, steigt der Siedepunkt von Wasser an.",
+        hint: "Denke an einen Schnellkochtopf (Dampfkochtopf) in der Küche.",
+        correctIndex: 0,
+        options: [
+            { label: "A. Richtig", explanation: "Richtig! Im Schnellkochtopf herrscht hoher Druck. Das Wasser kocht erst bei ca. 120 °C, wodurch Essen schneller gar wird." },
+            { label: "B. Falsch", explanation: "Falsch. Hoher Druck drückt die Teilchen zusammen – Wasser kocht erst bei höheren Temperaturen." }
+        ]
+    },
+    {
+        num: 34,
+        text: "34. Bei der Temperaturskala nach Celsius dient gefrierendes und kochendes Wasser als Grenze.",
+        hint: "Werden 0 °C und 100 °C durch Wasser bestimmt?",
+        correctIndex: 0,
+        options: [
+            { label: "A. Richtig", explanation: "Richtig! Anders Celsius wählte 0 °C für gefrierendes Wasser und 100 °C für kochendes Wasser." },
+            { label: "B. Falsch", explanation: "Falsch. Genau diese beiden Punkte von Wasser bilden die Basis der Celsius-Skala." }
+        ]
+    },
+    {
+        num: 35,
+        text: "35. In einem Vakuum (völlig leerer Raum) kann keine Wärme übertragen werden.",
+        hint: "Erinnere dich an die Sonne im Weltall.",
+        correctIndex: 1,
+        options: [
+            { label: "A. Richtig", explanation: "Falsch. Wärmeleitung und Wärmeströmung brauchen Teilchen, aber Wärmestrahlung funktioniert auch im Vakuum." },
+            { label: "B. Falsch", explanation: "Richtig! Wärmestrahlung benötigt keine Teilchen und funktioniert deshalb auch im Vakuum." }
+        ]
+    },
+    {
+        num: 36,
+        text: "36. Alkohol siedet bei einer niedrigeren Temperatur als Wasser.",
+        hint: "Verdampft Desinfektionsmittel oder Schnaps schneller als Wasser?",
+        correctIndex: 0,
+        options: [
+            { label: "A. Richtig", explanation: "Richtig! Reine Alkoholarten (wie Ethanol) sieden bereits bei etwa 78 °C." },
+            { label: "B. Falsch", explanation: "Falsch. Alkohol siedet schon bei ca. 78 °C, weshalb er viel schneller verdampft als Wasser." }
+        ]
+    },
+    {
+        num: 37,
+        text: "37. Die Teilchen in einem Gas stoßen ständig aneinander und an die Wände des Behälters.",
+        hint: "Woher kommt der Druck in einem aufgepumpten Luftballon?",
+        correctIndex: 0,
+        options: [
+            { label: "A. Richtig", explanation: "Richtig! Die unzählbaren Stöße der Gas-Teilchen erzeugen den Druck an den Wänden." },
+            { label: "B. Falsch", explanation: "Falsch. Gas-Teilchen sausen wild umher und prallen ständig gegen alles, was im Weg ist." }
+        ]
+    },
+    {
+        num: 38,
+        text: "38. Ein Thermometer misst direkt die Anzahl der Teilchen in einem Stoff.",
+        hint: "Misst ein Thermometer die Menge oder die Wärme/Bewegung der Teilchen?",
+        correctIndex: 1,
+        options: [
+            { label: "A. Richtig", explanation: "Falsch. Ein Thermometer misst die Temperatur (durchschnittliche Teilchenbewegung), nicht die Anzahl der Teilchen." },
+            { label: "B. Falsch", explanation: "Richtig! Die Anzahl der Teilchen ist die Masse oder Stoffmenge. Das Thermometer zeigt die Bewegung (Temperatur) an." }
+        ]
+    },
+    {
+        num: 39,
+        text: "39. Dunkle Gegenstände nehmen Wärmestrahlung besser auf als helle Gegenstände.",
+        hint: "Warum wird einem im Sommer in einem schwarzen T-Shirt schneller heiß?",
+        correctIndex: 0,
+        options: [
+            { label: "A. Richtig", explanation: "Richtig! Dunkle Flächen absorbieren (schlucken) mehr Strahlung, helle Flächen reflektieren sie." },
+            { label: "B. Falsch", explanation: "Falsch. Schwarze Kleidung nimmt Sonnenstrahlung stark auf und erwärmt sich schneller." }
+        ]
+    },
+    {
+        num: 40,
+        text: "40. Kühlt man ein Gas stark ab, wird es irgendwann flüssig.",
+        hint: "Überlege, was passiert, wenn Wasserdampf oder Abgase stark abkühlen.",
+        correctIndex: 0,
+        options: [
+            { label: "A. Richtig", explanation: "Richtig! Verlangsamt man die Teilchen durch Abkühlung, rücken sie zusammen und das Gas kondensiert zu einer Flüssigkeit." },
+            { label: "B. Falsch", explanation: "Falsch. Fast jedes Gas verflüssigt sich bei ausreichend tiefen Temperaturen." }
+        ]
+    }
+];
+
+
+    let currentIndex = 0; // Startet bei Frage 1 (Index 0)
+    let isHintVisible = false; // Hinweis startet ausgeblendet
+
+    function renderQuestion() {
+        const q = questions[currentIndex];
+        
+        // Header & Fortschritt
+        document.getElementById("progress-text").textContent = `${q.num} / ${questions.length}`;
+        document.getElementById("progress-bar-fill").style.width = `${(q.num / questions.length) * 100}%`;
+        document.getElementById("question-text").textContent = q.text;
+        document.getElementById("hint-text").textContent = q.hint;
+
+        // Zustand des Hinweises anpassen
+        applyHintVisibility();
+
+        // Antwortoptionen aufbauen
+        const container = document.getElementById("options-container");
+        container.innerHTML = "";
+
+        q.options.forEach((opt, idx) => {
+            const box = document.createElement("div");
+            box.className = "option-box";
+            box.onclick = () => selectOption(box, idx === q.correctIndex);
+
+            box.innerHTML = `
+                <div class="option-label">${opt.label}</div>
+                <div class="explanation">${opt.explanation}</div>
+            `;
+            container.appendChild(box);
+        });
+
+        // Nav-Buttons Status
+        document.getElementById("btn-prev").disabled = currentIndex === 0;
+        document.getElementById("btn-next").disabled = currentIndex === questions.length - 1;
+    }
+
+    function selectOption(element, isCorrect) {
+        const allBoxes = document.querySelectorAll('.option-box');
+        allBoxes.forEach(box => box.className = 'option-box');
+
+        if (isCorrect) {
+            element.classList.add('selected-correct');
+        } else {
+            element.classList.add('selected-incorrect');
+        }
+    }
+
+    function toggleHint() {
+        isHintVisible = !isHintVisible;
+        applyHintVisibility();
+    }
+
+    function applyHintVisibility() {
+        const hintText = document.getElementById("hint-text");
+        const hintToggleText = document.querySelector(".hint-toggle span:first-child");
+        const hintArrow = document.getElementById("hint-arrow");
+
+        if (isHintVisible) {
+            hintText.style.display = "block";
+            hintToggleText.textContent = "Hinweis ausblenden";
+            hintArrow.textContent = "▲";
+        } else {
+            hintText.style.display = "none";
+            hintToggleText.textContent = "Hinweis anzeigen";
+            hintArrow.textContent = "▼";
+        }
+    }
+
+    function prevQuestion() {
+        if (currentIndex > 0) {
+            currentIndex--;
+            renderQuestion();
+        }
+    }
+
+    function nextQuestion() {
+        if (currentIndex < questions.length - 1) {
+            currentIndex++;
+            renderQuestion();
+        }
+    }
+
+    // Initiales Rendern beim Laden der Seite
+    renderQuestion();
+</script>
+
+</body>
+</html>
