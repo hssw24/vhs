@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aggregatzustände Quiz</title>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --text-color: #e0e0e0;
+            --text-secondary: #aaaaaa;
+            --box-bg-color: #2c2c2e;
+            --correct-bg-color: #1c3b1e;
+            --correct-border: #2e6b32;
+            --correct-text-color: #b6d7a8;
+            --incorrect-bg-color: #4a151b;
+            --incorrect-border: #8b2500;
+            --incorrect-text-color: #f4cccc;
+            --btn-blue: #0d6efd;
+            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: var(--font-family);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .quiz-container {
+            width: 100%;
+            max-width: 500px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .header {
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        /* Progress Bar */
+        .progress-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .progress-bar-container {
+            flex-grow: 1;
+            height: 6px;
+            background-color: #333;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background-color: #0d6efd;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        /* Question */
+        .question-text {
+            font-size: 18px;
+            line-height: 1.4;
+            font-weight: 500;
+        }
+
+        /* Options */
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option-box {
+            background-color: var(--box-bg-color);
+            padding: 16px;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .option-label {
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .explanation {
+            display: none;
+            font-size: 14px;
+            margin-top: 10px;
+            line-height: 1.4;
+        }
+
+        /* States */
+        .option-box.selected-correct {
+            background-color: var(--correct-bg-color);
+            border-color: var(--correct-border);
+        }
+        .option-box.selected-correct .option-label { color: var(--correct-text-color); }
+        .option-box.selected-correct .explanation { display: block; color: var(--correct-text-color); }
+
+        .option-box.selected-incorrect {
+            background-color: var(--incorrect-bg-color);
+            border-color: var(--incorrect-border);
+        }
+        .option-box.selected-incorrect .option-label { color: var(--incorrect-text-color); }
+        .option-box.selected-incorrect .explanation { display: block; color: var(--incorrect-text-color); }
+
+        /* Hint Section */
+        .hint-section {
+            margin-top: 5px;
+        }
+
+        .hint-toggle {
+            cursor: pointer;
+            color: var(--text-secondary);
+            font-size: 15px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            user-select: none;
+        }
+
+        .hint-text {
+            margin-top: 10px;
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.4;
+            display: none; /* Standardmäßig ausgeblendet */
+        }
+
+        /* Navigation Buttons */
+        .nav-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .btn {
+            border: none;
+            border-radius: 20px;
+            padding: 10px 24px;
+            font-size: 15px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .btn-secondary {
+            background-color: var(--box-bg-color);
+            color: var(--text-color);
+        }
+
+        .btn-primary {
+            background-color: var(--btn-blue);
+            color: white;
+        }
+
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+
+<div class="quiz-container">
+    <div class="header">Aggregatzustände – Wahr oder Falsch?</div>
+
+    <div class="progress-header">
+        <div class="progress-bar-container">
+            <div class="progress-bar-fill" id="progress-bar-fill"></div>
+        </div>
+        <span class="progress-text" id="progress-text">1 / 10</span>
+    </div>
+
+    <div class="question-text" id="question-text"></div>
+
+    <div class="options-container" id="options-container"></div>
+
+    <!-- Hinweis-Bereich -->
+    <div class="hint-section">
+        <div class="hint-toggle" onclick="toggleHint()">
+            <span>Hinweis anzeigen</span>
+            <span id="hint-arrow">▼</span>
+        </div>
+        <div class="hint-text" id="hint-text"></div>
+    </div>
+
+    <div class="nav-buttons">
+        <button class="btn btn-secondary" id="btn-prev" onclick="prevQuestion()">Zurück</button>
+        <button class="btn btn-primary" id="btn-next" onclick="nextQuestion()">Weiter</button>
+    </div>
+</div>
+
+<script>
+const questions = [
+    // --- Thema 1: Relative Luftfeuchtigkeit ---
+    {
+        num: 41,
+        text: "41. Warme Luft kann mehr Wasserdampf aufnehmen als kalte Luft.",
+        hint: "Stelle dir vor, warme Luft ist ein größerer Schwamm für Wasser als kalte Luft.",
+        correctIndex: 0,
+        options: [
+            { label: "A. Richtig", explanation: "Richtig! Je wärmer die Luft ist, desto mehr unsichtbaren Wasserdampf kann sie speichern." },
+            { label: "B. Falsch", explanation: "Falsch. Warme Luft kann tatsächlich deutlich mehr Feuchtigkeit aufnehmen als kalte Luft." }
+        ]
+    },
+    {
+        num: 42,
+        text: "42. Eine relative Luftfeuchtigkeit von 100 % bedeutet, dass es unter Wasser ist.",
+        hint: "Bedeutet 100 %, dass die Luft komplett 'voll' mit Wasserdampf ist?",
+        correctIndex: 1,
+        options: [
+            { label: "A. Richtig", explanation: "Falsch. 100 % bedeutet nur, dass die Luft maximal gefüllt ist. Es bilden sich Nebel oder Regentropfen." },
+            { label: "B. Falsch", explanation: "Richtig! 100 % heißt nur, dass die Luft keinen weiteren Wasserdampf mehr aufnehmen kann." }
+        ]
+    },
+    {
+        num: 43,
+        text: "43. Wenn man kalte Außenluft im Winter im Zimmer erwärmt, wird die Luft trockener.",
+        hint: "Der Schwamm (die Luft) wird durch Erwärmung größer, aber die Wassermenge bleibt gleich.",
+        correctIndex: 0,
+        options: [
+            { label: "A. Richtig", explanation: "Richtig! Die relative Luftfeuchtigkeit sinkt, weil die erwärmte Luft viel mehr Wasser aufnehmen könnte." },
+            { label: "B. Falsch", explanation: "Falsch. Durch das Heizen sinkt die RELATIVE Luftfeuchtigkeit, weshalb wir im Winter oft trockene Raumluft haben." }
+        ]
+    },
+    {
+        num: 44,
+        text: "44. Wenn feuchte Luft stark abkühlt, bilden sich Wassertropfen (z. B. Nebel oder Tau).",
+        hint: "Was passiert mit dem Wasser, wenn der 'Luft-Schwamm' durch Kälte kleiner wird?",
+        correctIndex: 0,
+        options: [
+            { label: "A. Richtig", explanation: "Richtig! Da kalte Luft weniger Wasser halten kann, 'läuft sie über' – der Wasserdampf kondensiert." },
+            { label: "B. Falsch", explanation: "Falsch. Beim Abkühlen überschreitet die Luft 100 % Feuchtigkeit und gibt das Wasser als Tropfen ab." }
+        ]
+    },
+    {
+        num: 45,
+        text: "45. Schwüles Wetter im Sommer bedeutet, dass die relative Luftfeuchtigkeit sehr niedrig ist.",
+        hint: "Fühlt sich schwüle Luft trocken oder sehr feucht an?",
+        correctIndex: 1,
+        options: [
+            { label: "A. Richtig", explanation: "Falsch. Schwül ist es, wenn die Luft warm ist UND gleichzeitig sehr viel Feuchtigkeit enthält." },
+            { label: "B. Falsch", explanation: "Richtig! Schwüle Luft hat eine sehr HOHE Luftfeuchtigkeit, weshalb Körperschweiß schlecht verdunstet." }
+        ]
+    },
+
+    // --- Thema 2: Lufttemperatur & Höhe ---
+    {
+        num: 46,
+        text: "46. Je höher man auf einen Berg steigt, desto kälter wird es in der Regel.",
+        hint: "Warum liegt auf sehr hohen Bergen selbst im Sommer Schnee?",
+        correctIndex: 0,
+        options: [
+            { label: "A. Richtig", explanation: "Richtig! Pro 1.000 Höhenmeter kühlt die Luft durchschnittlich um etwa 6,5 bis 10 °C ab." },
+            { label: "B. Falsch", explanation: "Falsch. Es wird nach oben hin kälter, weil die Luft dünner wird und weniger Wärme speichern kann." }
+        ]
+    },
+    {
+        num: 47,
+        text: "47. Auf hohen Bergen ist es kälter, weil man näher an der Sonne ist.",
+        hint: "Die Sonne erwärmt zuerst den Erdboden, nicht die Luft direkt.",
+        correctIndex: 1,
+        options: [
+            { label: "A. Richtig", explanation: "Falsch. Der Abstand zur Sonne spielt keine Rolle. Die Luft wird hauptsächlich vom Erdboden von unten geheizt." },
+            { label: "B. Falsch", explanation: "Richtig! Der Erdboden nimmt die Sonnenwärme auf und heizt die Luft von unten nach oben. Oben ist es daher kälter." }
+        ]
+    },
+    {
+        num: 48,
+        text: "48. Wenn Luft nach oben steigt und sich ausdehnt, kühlt sie sich automatisch ab.",
+        hint: "Denke an das Entweichen von Luft aus einem prallen Reifen – sie fühlt sich kalt an.",
+        correctIndex: 0,
+        options: [
+            { label: "A. Richtig", explanation: "Richtig! Aufsteigende Luft dehnt sich wegen des geringeren Drucks aus und kühlt dabei ab." },
+            { label: "B. Falsch", explanation: "Falsch. Wenn Gasen erlaubt wird sich auszudehnen, verbraucht das Energie und sie kühlen ab." }
+        ]
+    },
+    {
+        num: 49,
+        text: "49. Trockene Luft kühlt beim Aufsteigen schneller ab als feuchte Luft.",
+        hint: "Beim Abkühlen von feuchter Luft wird durch Kondensation wieder etwas Wärme frei.",
+        correctIndex: 0,
+        options: [
+            { label: "A. Richtig", explanation: "Richtig! Trockene Luft kühlt ca. 1 °C pro 100 m ab. Feuchte Luft nur ca. 0,6 °C, weil Wolkenbildung Wärme freisetzt." },
+            { label: "B. Falsch", explanation: "Falsch. Feuchte Luft kühlt langsamer ab, da frei werdende Kondensationswärme dagegen steuert." }
+        ]
+    },
+    {
+        num: 50,
+        text: "50. In 10.000 Metern Höhe (Reiseflughöhe von Flugzeugen) herrscht meistens eine Temperatur von etwa +20 °C.",
+        hint: "Warum müssen Flugzeuge von außen extrem gut isoliert sein?",
+        correctIndex: 1,
+        options: [
+            { label: "A. Richtig", explanation: "Falsch. In dieser Höhe ist es extrem kalt, oft zwischen -40 °C und -50 °C!" },
+            { label: "B. Falsch", explanation: "Richtig! In Flughöhe herrschen eiskalte Temperaturen von weit unter -40 °C." }
+        ]
+    },
+
+    // --- Thema 3: Höherer Druck = Höherer Siedepunkt ---
+    {
+        num: 51,
+        text: "51. In einem Schnellkochtopf kocht Wasser erst bei über 100 °C.",
+        hint: "Im geschlossenen Topf baut sich ein hoher Druck auf.",
+        correctIndex: 0,
+        options: [
+            { label: "A. Richtig", explanation: "Richtig! Durch den hohen Druck kocht das Wasser erst bei ca. 115 bis 120 °C. Das Essen wird schneller gar." },
+            { label: "B. Falsch", explanation: "Falsch. Der hohe Druck verhindert das schnelle Sieden. So wird das Wasser heißer als 100 °C." }
+        ]
+    },
+    {
+        num: 52,
+        text: "52. Wenn der Druck auf eine Flüssigkeit steigt, fällt ihr Siedepunkt.",
+        hint: "Macht es hoher Druck für die Teilchen schwerer oder leichter, als Dampf zu entwischen?",
+        correctIndex: 1,
+        options: [
+            { label: "A. Richtig", explanation: "Falsch. Höherer Druck drückt die Teilchen zusammen – man braucht MEHR Wärme (höhere Temp.), damit es kocht." },
+            { label: "B. Falsch", explanation: "Richtig! Mehr Druck bedeutet ein HÖHERER Siedepunkt. Weniger Druck bedeutet ein NIEDRIGERER Siedepunkt." }
+        ]
+    },
+    {
+        num: 53,
+        text: "53. Auf dem Mount Everest kocht Wasser schon bei etwa 70 °C.",
+        hint: "Auf sehr hohen Bergen ist der Luftdruck viel geringer als auf Meereshöhe.",
+        correctIndex: 0,
+        options: [
+            { label: "A. Richtig", explanation: "Richtig! Weil der Luftdruck oben so niedrig ist, entweichen die Wassertropfen schon bei 70 °C als Dampf." },
+            { label: "B. Falsch", explanation: "Falsch. Da der Luftdruck auf dem Mount Everest sehr niedrig ist, kocht Wasser dort tatsächlich schon bei 70 °C." }
+        ]
+    },
+    {
+        num: 54,
+        text: "54. Kartoffeln werden auf einem extrem hohen Berg im offenen Topf genauso schnell gar wie im Tal.",
+        hint: "Kartoffeln brauchen ausreichend Hitze (ca. 100 °C), um weich zu werden.",
+        correctIndex: 1,
+        options: [
+            { label: "A. Richtig", explanation: "Falsch. Da das Wasser schon bei 70 °C kocht und nicht heißer wird, dauern Kartoffeln ewig oder werden gar nicht gar!" },
+            { label: "B. Falsch", explanation: "Richtig! Das Wasser wird auf dem Berg nicht heiß genug (nur ca. 70 °C), deshalb brauchen Kartoffeln viel länger." }
+        ]
+    },
+    {
+        num: 55,
+        text: "55. Wenn man in einem Raum den Druck künstlich stark senkt (Vakuum), kann kaltes Wasser anfangen zu kochen.",
+        hint: "Brauchen die Teilchen noch viel Energie zum Entweichen, wenn kein Druck von oben auf sie presst?",
+        correctIndex: 0,
+        options: [
+            { label: "A. Richtig", explanation: "Richtig! Bei sehr niedrigem Druck kocht Wasser selbst bei Raumtemperatur (20 °C)." },
+            { label: "B. Falsch", explanation: "Falsch. Ohne Gegendruck können die Wasserteilchen sofort gasförmig werden – das Wasser sprudelt kalt." }
+        ]
+    }
+];
+
+
+    let currentIndex = 0; // Startet bei Frage 1 (Index 0)
+    let isHintVisible = false; // Hinweis startet ausgeblendet
+
+    function renderQuestion() {
+        const q = questions[currentIndex];
+        
+        // Header & Fortschritt
+        document.getElementById("progress-text").textContent = `${q.num} / ${questions.length}`;
+        document.getElementById("progress-bar-fill").style.width = `${(q.num / questions.length) * 100}%`;
+        document.getElementById("question-text").textContent = q.text;
+        document.getElementById("hint-text").textContent = q.hint;
+
+        // Zustand des Hinweises anpassen
+        applyHintVisibility();
+
+        // Antwortoptionen aufbauen
+        const container = document.getElementById("options-container");
+        container.innerHTML = "";
+
+        q.options.forEach((opt, idx) => {
+            const box = document.createElement("div");
+            box.className = "option-box";
+            box.onclick = () => selectOption(box, idx === q.correctIndex);
+
+            box.innerHTML = `
+                <div class="option-label">${opt.label}</div>
+                <div class="explanation">${opt.explanation}</div>
+            `;
+            container.appendChild(box);
+        });
+
+        // Nav-Buttons Status
+        document.getElementById("btn-prev").disabled = currentIndex === 0;
+        document.getElementById("btn-next").disabled = currentIndex === questions.length - 1;
+    }
+
+    function selectOption(element, isCorrect) {
+        const allBoxes = document.querySelectorAll('.option-box');
+        allBoxes.forEach(box => box.className = 'option-box');
+
+        if (isCorrect) {
+            element.classList.add('selected-correct');
+        } else {
+            element.classList.add('selected-incorrect');
+        }
+    }
+
+    function toggleHint() {
+        isHintVisible = !isHintVisible;
+        applyHintVisibility();
+    }
+
+    function applyHintVisibility() {
+        const hintText = document.getElementById("hint-text");
+        const hintToggleText = document.querySelector(".hint-toggle span:first-child");
+        const hintArrow = document.getElementById("hint-arrow");
+
+        if (isHintVisible) {
+            hintText.style.display = "block";
+            hintToggleText.textContent = "Hinweis ausblenden";
+            hintArrow.textContent = "▲";
+        } else {
+            hintText.style.display = "none";
+            hintToggleText.textContent = "Hinweis anzeigen";
+            hintArrow.textContent = "▼";
+        }
+    }
+
+    function prevQuestion() {
+        if (currentIndex > 0) {
+            currentIndex--;
+            renderQuestion();
+        }
+    }
+
+    function nextQuestion() {
+        if (currentIndex < questions.length - 1) {
+            currentIndex++;
+            renderQuestion();
+        }
+    }
+
+    // Initiales Rendern beim Laden der Seite
+    renderQuestion();
+</script>
+
+</body>
+</html>
