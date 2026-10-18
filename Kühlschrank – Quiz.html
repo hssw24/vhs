@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kühlschrank – Quiz</title>
+<style>
+:root{--bg:#F2F6F9;--ink:#13283B;--mute:#53677A;--card:#fff;--line:#C9D6E0;--accent:#1F6F9C;--ok:#1B7A4B;--okbg:#E3F4EA;--bad:#B3361F;--badbg:#FBE8E3;--steam:#C4622D;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0F1B26;--ink:#E6EEF4;--mute:#9FB2C2;--card:#172A3A;--line:#2C4356;--accent:#6DB8E3;--ok:#5CC58C;--okbg:#153525;--bad:#F08A72;--badbg:#3A1D17;--steam:#E58A55;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0F1B26;--ink:#E6EEF4;--mute:#9FB2C2;--card:#172A3A;--line:#2C4356;--accent:#6DB8E3;--ok:#5CC58C;--okbg:#153525;--bad:#F08A72;--badbg:#3A1D17;--steam:#E58A55;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:640px;margin:0 auto;padding:20px 16px 48px}
+h1{font:700 1.5rem/1.2 Georgia,"Iowan Old Style",serif;margin:0 0 4px}
+h2{font:600 1.25rem/1.35 Georgia,"Iowan Old Style",serif;margin:6px 0 18px}
+.sub{color:var(--mute);margin:0 0 16px;font-size:.95rem}
+.bar{height:10px;border-radius:5px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--steam));transition:width .4s}
+.scale{display:flex;justify-content:space-between;font-size:.8rem;color:var(--mute);margin:4px 0 20px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 18px}
+.sec{color:var(--accent);font-weight:600;font-size:.9rem;margin:0}
+.opts{display:grid;gap:10px}
+button{font:inherit;color:inherit;cursor:pointer}
+.opts button{text-align:left;padding:13px 14px;background:var(--bg);border:2px solid var(--line);border-radius:10px}
+.opts button:hover:not(:disabled){border-color:var(--accent)}
+.opts button:disabled{cursor:default}
+.opts .ok{border-color:var(--ok);background:var(--okbg)}
+.opts .bad{border-color:var(--bad);background:var(--badbg)}
+.fb{margin-top:18px;padding:14px;border-radius:10px;border-left:5px solid var(--line);background:var(--bg)}
+.fb.ok{border-color:var(--ok)}.fb.bad{border-color:var(--bad)}
+.fb b{display:block;margin-bottom:4px}
+.go{margin-top:16px;padding:12px 22px;border:0;border-radius:10px;background:var(--accent);color:var(--bg);font-weight:600}
+.alt{background:transparent;border:2px solid var(--accent);color:var(--accent)}
+button:focus-visible{outline:3px solid var(--steam);outline-offset:2px}
+.big{font:700 2.4rem/1.1 Georgia,serif;margin:4px 0}
+.row{display:flex;justify-content:space-between;border-bottom:1px solid var(--line);padding:8px 0}
+.wr{margin:10px 0;padding:10px 12px;background:var(--bg);border-radius:8px;font-size:.95rem}
+.btns{display:flex;gap:10px;flex-wrap:wrap}
+@media (prefers-reduced-motion:reduce){.bar i{transition:none}}
+</style>
+</head>
+<body>
+<main>
+<h1>Kühlschrank – Quiz</h1>
+<p class="sub">Der Kältekreislauf mit Kältemittel. Nach jeder Antwort bekommst du eine Erklärung.</p>
+<div class="bar" role="progressbar" aria-label="Fortschritt"><i id="fill"></i></div>
+<div class="scale"><span>Innen ca. 5 °C</span><span id="count"></span><span>Außen ca. 22 °C</span></div>
+<div class="card" id="app"></div>
+</main>
+<script>
+const R=["Richtig","Falsch"];
+const S=["Teil A: Vorkenntnisse","Teil B: Der Kältekreislauf","Teil C: Das Gefrierfach"];
+const T=(s,q,w,e)=>({s,q,o:R,a:w?0:1,e,tf:1});
+const M=(s,q,o,a,e)=>({s,q,o,a,e});
+const Q=[
+T(0,"Ein Kühlschrank erzeugt Kälte.",0,"Falsch. Er transportiert Wärme von innen (ca. 5 °C) nach außen (ca. 22 °C). Kälte ist nur wenig Wärme im Innenraum."),
+M(0,"In welche Richtung fließt Wärme von selbst?",["Von kalt nach warm","Von warm nach kalt","In beide Richtungen gleich","Gar nicht"],1,"Von selbst fließt Wärme nur von warm nach kalt. Der Kühlschrank muss sie gegen diese Richtung befördern."),
+M(0,"Wozu braucht ein Kühlschrank Strom?",["Für das Licht","Um Kälte herzustellen","Für den Kompressor, weil Wärme nicht von selbst von kalt nach warm fließt","Um den Verdampfer zu heizen"],2,"Der Wärmetransport von innen nach außen läuft nicht von selbst. Der Kompressor leistet dafür die Arbeit."),
+T(0,"Beim Verdampfen nimmt ein Stoff Wärme auf, die Umgebung kühlt ab.",1,"Richtig. Das ist die Verdampfungswärme (bei Wasser 2257 kJ/kg). Tafelanker: Flüssig → Gas, Wärme rein (blau)."),
+M(0,"Was passiert beim Kondensieren mit der Wärme?",["Sie wird aufgenommen","Sie wird wieder abgegeben","Sie verschwindet","Sie wird zu Kälte"],1,"Beim Kondensieren wird die beim Verdampfen aufgenommene Wärme wieder abgegeben. Tafelanker: Gas → Flüssig, Wärme raus (rot)."),
+M(0,"Wie hängen Druck und Siedepunkt zusammen?",["Höherer Druck, höherer Siedepunkt","Höherer Druck, niedrigerer Siedepunkt","Es gibt keinen Zusammenhang","Höherer Druck, kein Sieden mehr"],0,"Je höher der Druck, desto höher der Siedepunkt. Beispiel Schnellkochtopf: 2 bar, Wasser siedet erst bei ca. 120 °C."),
+T(0,"Wasser siedet bei 0,7 bar (ca. 3000 m Höhe) bei mehr als 100 °C.",0,"Falsch. Bei niedrigerem Druck siedet Wasser früher: bei 0,7 bar schon bei ca. 90 °C."),
+M(0,"Bei welcher Temperatur siedet Isobutan (R600a) bei Normaldruck (1,0 bar)?",["ca. −25 °C","ca. −12 °C","ca. 40 °C","ca. 100 °C"],1,"Isobutan siedet bei 1,0 bar bei ca. −12 °C. Bei 0,6 bar sind es ca. −25 °C, bei ca. 5 bar ca. 40 °C."),
+M(0,"Bei welchem Druck siedet Isobutan erst bei ca. 40 °C?",["ca. 0,6 bar","ca. 1 bar","ca. 5 bar","ca. 0,03 bar"],2,"Das ist der hohe Druck im Verflüssiger. Merksatz: Mit dem Druck stellt man den Siedepunkt ein."),
+M(0,"Was passiert, wenn man ein Gas zusammendrückt (verdichtet)?",["Es wird warm","Es wird kalt","Seine Temperatur bleibt gleich","Es verschwindet"],0,"Verdichten erwärmt das Gas (Fahrradpumpe). Ausdehnen kühlt es (Spraydose)."),
+M(1,"Welches Bauteil folgt im Kreislauf direkt nach dem Verdampfer?",["Kompressor","Verflüssiger","Kapillarrohr","Gefrierfach"],0,"Reihenfolge: Verdampfer → Kompressor → Verflüssiger → Kapillarrohr, dann wieder Verdampfer."),
+M(1,"Was geschieht im Verdampfer (innen)?",["Das Kältemittel kondensiert und gibt Wärme ab","Das Kältemittel wird verdichtet","Das Kältemittel verdampft und nimmt Wärme aus dem Innenraum auf","Das Kältemittel wird erhitzt"],2,"Niedriger Druck, Siedepunkt ca. −25 °C: Wärme fließt aus dem Innenraum ins Kältemittel, der Innenraum kühlt ab."),
+M(1,"Welche Werte hat das Kältemittel im Verdampfer ungefähr?",["ca. 5 bar, heißes Gas","ca. 0,6 bar, kalter Dampf","ca. 1 bar, 100 °C","ca. 2 bar, 120 °C"],1,"Verdampfer: ca. 0,6 bar, kalter Dampf. 5 bar und heißes Gas gehören zum Kompressor."),
+M(1,"Was macht der Kompressor?",["Er kühlt das Gas ab","Er saugt den Dampf an und verdichtet ihn, das Gas wird heiß (ca. 70 bis 80 °C)","Er verflüssigt das Kältemittel","Er senkt den Druck"],1,"Verdichten erwärmt Gas. Am Ausgang hat es ca. 5 bar und ist heißes Gas."),
+M(1,"Wo sitzt der Verflüssiger?",["Im Gefrierfach","Als Gitter an der Rückwand außen","In der Tür","Direkt im Kompressor"],1,"Der Verflüssiger sitzt außen. Dort wird die Wärme an die Raumluft abgegeben."),
+M(1,"Warum fließt die Wärme im Verflüssiger nach außen?",["Das Gas (70 bis 80 °C) ist heißer als die Raumluft (ca. 22 °C)","Der Kompressor saugt die Wärme heraus","Wärme fließt von kalt nach warm","Die Raumluft hat ca. 40 °C"],0,"Auch hier fließt Wärme von selbst von warm nach kalt. Das Gas gibt Wärme ab und kondensiert (bei 5 bar ab ca. 40 °C)."),
+T(1,"Im Verflüssiger gibt das Kältemittel Wärme an die Raumluft ab und wird dabei flüssig.",1,"Richtig. Kondensieren gibt Wärme ab. Danach ist das Kältemittel warm und flüssig bei ca. 5 bar."),
+M(1,"Was geschieht im Kapillarrohr?",["Das Gas wird verdichtet","Die Flüssigkeit wird durch das enge Rohr gedrückt, der Druck fällt, der Siedepunkt sinkt auf ca. −25 °C, das Kältemittel wird kalt","Das Kältemittel wird erhitzt","Wärme wird an die Raumluft abgegeben"],1,"Der Druck fällt, deshalb sinkt der Siedepunkt. Das Kältemittel ist nun kalt und bereit, im Verdampfer wieder Wärme aufzunehmen."),
+M(1,"Welche Reihenfolge ist im Kältekreislauf richtig?",["Verdampfer → Kompressor → Verflüssiger → Kapillarrohr","Verdampfer → Verflüssiger → Kompressor → Kapillarrohr","Kompressor → Verdampfer → Kapillarrohr → Verflüssiger","Kapillarrohr → Kompressor → Verdampfer → Verflüssiger"],0,"Tafelanker: Rechteck im Uhrzeigersinn, links innen Verdampfer, unten Kompressor, rechts außen Verflüssiger, oben Kapillarrohr."),
+M(1,"Welcher Merksatz stimmt?",["Innen hoher Druck: Wärme wird abgegeben. Außen niedriger Druck: Wärme wird aufgenommen","Innen niedriger Druck, niedriger Siedepunkt: Wärme wird aufgenommen. Außen hoher Druck, hoher Siedepunkt: Wärme wird abgegeben","Innen und außen gleicher Druck","Innen niedriger Druck: Wärme wird abgegeben"],1,"Der niedrige Druck innen lässt das Kältemittel schon bei ca. −25 °C verdampfen, der hohe Druck außen lässt es erst bei ca. 40 °C kondensieren."),
+M(2,"Wo ist die kälteste Stelle im Kühlschrank?",["Das Gefrierfach am Verdampfer (ca. −18 °C)","Die untere Glasplatte","Die Tür","Der Kompressor"],0,"Das Gefrierfach sitzt am Verdampfer. Im restlichen Kühlschrank sind es ca. 5 °C."),
+M(2,"Wie kühlt das Gefrierfach den Rest des Kühlschranks?",["Kalte Luft steigt nach oben","Kalte Luft sinkt nach unten und kühlt den Rest","Das Gefrierfach heizt den Rest","Der Kompressor bläst kalte Luft hinein"],1,"Kalte Luft ist schwerer und sinkt ab. Tafelanker: Pfeile für absinkende kalte Luft im Querschnitt."),
+M(2,"Warum bildet sich am Verdampfer Reif?",["Feuchte Luft beim Öffnen schlägt sich am kalten Verdampfer nieder","Das Kältemittel tritt aus","Der Kompressor ist zu heiß","Im Kältemittel ist Wasser"],0,"Der Reif muss regelmäßig abgetaut werden."),
+T(2,"Bei −18 °C sind Bakterien praktisch gestoppt, Lebensmittel halten monatelang.",1,"Richtig. Deshalb liegt das Gefrierfach bei ca. −18 °C."),
+T(2,"Eine Wärmepumpe arbeitet nach demselben Prinzip wie ein Kühlschrank, nutzt aber die abgegebene Wärme zum Heizen.",1,"Richtig. Statt die Kälte innen zu nutzen, nutzt sie die Wärme, die der Verflüssiger abgibt.")
+];
+const $=s=>document.querySelector(s);
+const shuffle=a=>{for(let j=a.length-1;j>0;j--){const k=Math.floor(Math.random()*(j+1));[a[j],a[k]]=[a[k],a[j]]}return a};
+let list=[],i=0,res=[];
+function start(src,mix){
+  list=src.map(x=>({...x}));
+  if(mix){shuffle(list);list.forEach(x=>{if(!x.tf){const p=shuffle(x.o.map((_,n)=>n));x.o=p.map(n=>x.o[n]);x.a=p.indexOf(x.a)}})}
+  i=0;res=[];show();
+}
+function show(){
+  if(i>=list.length)return done();
+  const x=list[i];
+  $("#fill").style.width=(i/list.length*100)+"%";
+  $("#count").textContent="Frage "+(i+1)+" von "+list.length;
+  $("#app").innerHTML=`<p class="sec">${S[x.s]}</p><h2>${x.q}</h2><div class="opts">${x.o.map((t,n)=>`<button data-n="${n}">${t}</button>`).join("")}</div><div class="fb" id="fb" aria-live="polite" hidden></div>`;
+  $("#app").querySelectorAll(".opts button").forEach(b=>b.onclick=()=>answer(+b.dataset.n));
+}
+function answer(n){
+  const x=list[i],ok=n===x.a;
+  res.push({x,ok});
+  document.querySelectorAll(".opts button").forEach((b,k)=>{b.disabled=true;if(k===x.a)b.classList.add("ok");else if(k===n)b.classList.add("bad")});
+  const fb=$("#fb");fb.hidden=false;fb.className="fb "+(ok?"ok":"bad");
+  fb.innerHTML=`<b>${ok?"✓ Richtig":"✗ Nicht ganz. Richtig ist: "+x.o[x.a]}</b>${x.e}<br><button class="go" id="next">${i+1<list.length?"Weiter":"Ergebnis ansehen"}</button>`;
+  $("#next").onclick=()=>{i++;show()};$("#next").focus();
+}
+function done(){
+  $("#fill").style.width="100%";$("#count").textContent="Fertig";
+  const r=res.filter(v=>v.ok).length,w=res.filter(v=>!v.ok);
+  const rows=S.map((n,k)=>{const a=res.filter(v=>v.x.s===k);return a.length?`<div class="row"><span>${n}</span><b>${a.filter(v=>v.ok).length} von ${a.length}</b></div>`:""}).join("");
+  const msg=r/res.length>=.85?"Sehr gut, das sitzt.":r/res.length>=.6?"Gute Basis. Schau dir die falschen Fragen noch einmal an.":"Noch Luft nach oben. Wiederhole die falschen Fragen.";
+  $("#app").innerHTML=`<p class="sec">Ergebnis</p><p class="big">${r} von ${res.length} richtig</p><p>${msg}</p>${rows}${w.length?`<h2 style="margin-top:20px">Das solltest du wiederholen</h2>${w.map(v=>`<div class="wr"><b>${v.x.q}</b><br>Richtig: ${v.x.o[v.x.a]}<br>${v.x.e}</div>`).join("")}`:""}<div class="btns" style="margin-top:16px">${w.length?`<button class="go" id="again">Nur falsche Fragen wiederholen</button>`:""}<button class="go alt" id="all">Alles neu, gemischt</button></div>`;
+  if(w.length)$("#again").onclick=()=>start(w.map(v=>v.x),true);
+  $("#all").onclick=()=>start(Q,true);
+}
+start(Q,false);
+</script>
+</body>
+</html>

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Föhnwetterlage – Quiz</title>
+<style>
+:root{--bg:#F2F6F9;--ink:#13283B;--mute:#53677A;--card:#fff;--line:#C9D6E0;--accent:#1F6F9C;--ok:#1B7A4B;--okbg:#E3F4EA;--bad:#B3361F;--badbg:#FBE8E3;--steam:#C4622D;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0F1B26;--ink:#E6EEF4;--mute:#9FB2C2;--card:#172A3A;--line:#2C4356;--accent:#6DB8E3;--ok:#5CC58C;--okbg:#153525;--bad:#F08A72;--badbg:#3A1D17;--steam:#E58A55;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0F1B26;--ink:#E6EEF4;--mute:#9FB2C2;--card:#172A3A;--line:#2C4356;--accent:#6DB8E3;--ok:#5CC58C;--okbg:#153525;--bad:#F08A72;--badbg:#3A1D17;--steam:#E58A55;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:640px;margin:0 auto;padding:20px 16px 48px}
+h1{font:700 1.5rem/1.2 Georgia,"Iowan Old Style",serif;margin:0 0 4px}
+h2{font:600 1.25rem/1.35 Georgia,"Iowan Old Style",serif;margin:6px 0 18px}
+.sub{color:var(--mute);margin:0 0 16px;font-size:.95rem}
+.bar{height:10px;border-radius:5px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--steam));transition:width .4s}
+.scale{display:flex;justify-content:space-between;font-size:.8rem;color:var(--mute);margin:4px 0 20px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 18px}
+.sec{color:var(--accent);font-weight:600;font-size:.9rem;margin:0}
+.opts{display:grid;gap:10px}
+button{font:inherit;color:inherit;cursor:pointer}
+.opts button{text-align:left;padding:13px 14px;background:var(--bg);border:2px solid var(--line);border-radius:10px}
+.opts button:hover:not(:disabled){border-color:var(--accent)}
+.opts button:disabled{cursor:default}
+.opts .ok{border-color:var(--ok);background:var(--okbg)}
+.opts .bad{border-color:var(--bad);background:var(--badbg)}
+.fb{margin-top:18px;padding:14px;border-radius:10px;border-left:5px solid var(--line);background:var(--bg)}
+.fb.ok{border-color:var(--ok)}.fb.bad{border-color:var(--bad)}
+.fb b{display:block;margin-bottom:4px}
+.go{margin-top:16px;padding:12px 22px;border:0;border-radius:10px;background:var(--accent);color:var(--bg);font-weight:600}
+.alt{background:transparent;border:2px solid var(--accent);color:var(--accent)}
+button:focus-visible{outline:3px solid var(--steam);outline-offset:2px}
+.big{font:700 2.4rem/1.1 Georgia,serif;margin:4px 0}
+.row{display:flex;justify-content:space-between;border-bottom:1px solid var(--line);padding:8px 0}
+.wr{margin:10px 0;padding:10px 12px;background:var(--bg);border-radius:8px;font-size:.95rem}
+.btns{display:flex;gap:10px;flex-wrap:wrap}
+@media (prefers-reduced-motion:reduce){.bar i{transition:none}}
+</style>
+</head>
+<body>
+<main>
+<h1>Föhnwetterlage – Quiz</h1>
+<p class="sub">Von 10 °C in Italien zu 20 °C in Bayern. Nach jeder Antwort bekommst du eine Erklärung.</p>
+<div class="bar" role="progressbar" aria-label="Fortschritt"><i id="fill"></i></div>
+<div class="scale"><span>Italien 10 °C</span><span id="count"></span><span>Bayern 20 °C</span></div>
+<div class="card" id="app"></div>
+</main>
+<script>
+const R=["Richtig","Falsch"];
+const S=["Teil A: Vorkenntnisse","Teil B: Von Italien nach Bayern"];
+const T=(s,q,w,e)=>({s,q,o:R,a:w?0:1,e,tf:1});
+const M=(s,q,o,a,e)=>({s,q,o,a,e});
+const Q=[
+T(0,"Relative Luftfeuchtigkeit = vorhandene Wasserdampfmenge ÷ mögliche Höchstmenge · 100 %.",1,"Richtig. Bei 100 % ist die Luft gesättigt und kann keinen weiteren Wasserdampf mehr aufnehmen."),
+M(0,"Wie verhält sich warme Luft gegenüber kalter Luft beim Aufnehmen von Wasserdampf?",["Sie kann viel mehr aufnehmen","Sie kann weniger aufnehmen","Sie kann gleich viel aufnehmen","Sie kann gar keinen aufnehmen"],0,"Warme Luft hat eine deutlich höhere Höchstmenge. Tafelanker: kleiner Eimer = kalte Luft, großer Eimer = warme Luft."),
+M(0,"Wie viel Wasserdampf kann 1 m³ Luft bei 20 °C höchstens aufnehmen?",["ca. 5 g","ca. 9 g","ca. 17 g","ca. 30 g"],2,"Tabelle: 0 °C ca. 5 g, 10 °C ca. 9 g, 20 °C ca. 17 g, 30 °C ca. 30 g."),
+M(0,"Luft mit 5 g Wasserdampf pro m³ wird von 0 °C auf 20 °C erwärmt. Wie hoch ist die relative Feuchte danach?",["100 %","ca. 30 %","ca. 50 %","ca. 85 %"],1,"5 ÷ 17 ≈ 30 %. Bei 0 °C waren es 100 %. Die Luft wird trocken, Wolken lösen sich auf."),
+T(0,"Wird Luft abgekühlt, sinkt ihre relative Feuchte.",0,"Falsch. Merksatz: Abkühlen → relative Feuchte steigt, Erwärmen → relative Feuchte sinkt."),
+M(0,"Was passiert, wenn gesättigte Luft noch kälter wird?",["Wasserdampf kondensiert zu winzigen Tröpfchen","Die Luft wird trockener","Das Wasser gefriert sofort","Es passiert nichts"],0,"Die Höchstmenge sinkt, der überschüssige Wasserdampf kondensiert. So entstehen Wolken, Nebel und Regen."),
+M(0,"Was passiert mit dem Luftdruck, wenn man höher steigt?",["Er steigt","Er bleibt gleich","Er sinkt","Er schwankt zufällig"],2,"Mit der Höhe ist weniger Luft darüber, deshalb sinkt der Luftdruck."),
+M(0,"Warum kühlt ein aufsteigendes Luftpaket ab?",["Es dehnt sich aus und leistet Arbeit, die Teilchen verlieren Bewegungsenergie","Es gibt Wärme an die kalte Umgebung ab","Die Sonne scheint oben weniger","Es verliert Teilchen"],0,"Teilchen, die auf eine zurückweichende Wand stoßen, werden langsamer (Ballbeispiel). Weniger Bewegungsenergie bedeutet niedrigere Temperatur."),
+T(0,"Aufsteigende Luft kühlt vor allem deshalb ab, weil sie Wärme an die Umgebung abgibt.",0,"Falsch. Luft leitet Wärme schlecht und der Aufstieg geht schnell. Es wird praktisch keine Wärme ausgetauscht, die Abkühlung kommt nur von der Ausdehnung."),
+M(0,"Um wie viel kühlt trockene Luft beim Aufsteigen je 1000 m ab?",["ca. 5 °C","ca. 10 °C","ca. 15 °C","ca. 1 °C"],1,"Trockene (nicht gesättigte) Luft: etwa 10 °C je 1000 m."),
+T(0,"Absinkende Luft wird zusammengedrückt und erwärmt sich dadurch.",1,"Richtig. Die Teilchen werden schneller. Alltagsbeispiel: Eine Fahrradpumpe wird beim Pumpen warm."),
+M(0,"Welches Alltagsbeispiel zeigt Abkühlung durch Ausdehnen?",["Fahrradpumpe beim Pumpen","Spraydose beim Sprühen","Wasserkocher","Heizkörper"],1,"Das Gas in der Spraydose dehnt sich beim Sprühen aus und wird kalt. Die Fahrradpumpe zeigt das Gegenteil (Zusammendrücken = warm)."),
+M(0,"Warum kühlt aufsteigende Luft in Wolken nur um ca. 5 °C je 1000 m ab?",["Der Wasserdampf kondensiert und gibt Verdampfungswärme frei","Die Wolken isolieren die Luft","Die Luft dehnt sich in Wolken nicht aus","Kondensation entzieht der Luft Wärme"],0,"Beim Kondensieren wird die Verdampfungswärme (2257 kJ je kg Wasser) wieder frei und wirkt der Abkühlung entgegen."),
+M(1,"Welche Wetterlage drückt die Luft über die Alpen?",["Hochdruck südlich, Tiefdruck nördlich der Alpen","Hochdruck nördlich, Tiefdruck südlich der Alpen","Ein Wind vom Gipfel ins Tal","Die Erddrehung"],0,"Die Luft strömt vom Hoch zum Tief als Südwind auf die Alpen zu und wird hinaufgedrückt."),
+M(1,"Welche Temperatur hat die Luft am Gipfel (2000 m), wenn sie in Italien 10 °C hatte?",["0 °C","5 °C","10 °C","−10 °C"],0,"2 · 5 °C = 10 °C Abkühlung (Wolken und Regen), also 10 °C − 10 °C = 0 °C."),
+T(1,"Der Gipfel ist die kälteste Stelle auf dem Weg der Luft.",1,"Richtig. Dort hat die Luft außerdem viel Wasser als Regen und Schnee abgegeben."),
+M(1,"Um wie viel erwärmt sich die Luft beim Absinken von 2000 m auf 0 m auf der Nordseite?",["10 °C","15 °C","20 °C","5 °C"],2,"Absinken ohne Wolken: 2 · 10 °C = 20 °C Erwärmung, von 0 °C auf 20 °C."),
+T(1,"Auf der Nordseite lösen sich beim Absinken die Wolken auf, es wird nichts mehr frei oder gebunden.",1,"Richtig. Darum erwärmt sich die Luft jetzt voll um 10 °C je 1000 m."),
+M(1,"Wie warm ist die Luft in Bayern bei 0 m?",["10 °C","20 °C","30 °C","0 °C"],1,"Von 0 °C am Gipfel +20 °C = 20 °C. Das ist 10 °C mehr als in Italien auf gleicher Höhe."),
+M(1,"Warum ist die Luft in Bayern 10 °C wärmer als in Italien?",["Hinauf kühlt sie nur 5 °C je 1000 m ab, hinunter erwärmt sie sich 10 °C je 1000 m","Der Gipfel heizt die Luft auf","Die Reibung am Berg erwärmt die Luft","Niemand heizt, die Sonne ist in Bayern stärker"],0,"Der Unterschied von 5 °C je 1000 m ergibt über 2 · 1000 m genau 10 °C. Grund ist die freigesetzte Kondensationswärme beim Aufstieg."),
+T(1,"Föhn ist warme, trockene Luft mit niedriger relativer Feuchte und klarer Sicht.",1,"Richtig. Die Luft hat auf der Südseite Wasser verloren und wurde beim Absinken stark erwärmt."),
+M(1,"Welcher Merksatz passt zur Föhnrechnung?",["Hinauf trocken, hinunter feucht","Hinauf feucht (5 °C je 1000 m), hinunter trocken (10 °C je 1000 m)","Hinauf und hinunter immer 10 °C je 1000 m","Hinauf 10 °C, hinunter 5 °C je 1000 m"],1,"Das ist der Kern: Aufstieg mit Wolken kühlt weniger ab, als der trockene Abstieg erwärmt."),
+M(1,"Die Wolken bilden sich erst ab 500 m Höhe. Wie warm ist die Luft dann ungefähr in Bayern?",["20 °C","17,5 °C","15 °C","12,5 °C"],1,"Erst 500 m trocken (−5 °C), dann 1500 m feucht (−7,5 °C): Gipfel −2,5 °C. Abstieg +20 °C ergibt 17,5 °C."),
+T(1,"Die idealisierte Rechnung gilt genauso, wenn die Luft am Start nicht gesättigt ist.",0,"Falsch. Dann steigt die Luft zuerst trocken (10 °C je 1000 m), die Wolken bilden sich erst weiter oben und die Erwärmung in Bayern fällt kleiner aus.")
+];
+const $=s=>document.querySelector(s);
+const shuffle=a=>{for(let j=a.length-1;j>0;j--){const k=Math.floor(Math.random()*(j+1));[a[j],a[k]]=[a[k],a[j]]}return a};
+let list=[],i=0,res=[];
+function start(src,mix){
+  list=src.map(x=>({...x}));
+  if(mix){shuffle(list);list.forEach(x=>{if(!x.tf){const p=shuffle(x.o.map((_,n)=>n));x.o=p.map(n=>x.o[n]);x.a=p.indexOf(x.a)}})}
+  i=0;res=[];show();
+}
+function show(){
+  if(i>=list.length)return done();
+  const x=list[i];
+  $("#fill").style.width=(i/list.length*100)+"%";
+  $("#count").textContent="Frage "+(i+1)+" von "+list.length;
+  $("#app").innerHTML=`<p class="sec">${S[x.s]}</p><h2>${x.q}</h2><div class="opts">${x.o.map((t,n)=>`<button data-n="${n}">${t}</button>`).join("")}</div><div class="fb" id="fb" aria-live="polite" hidden></div>`;
+  $("#app").querySelectorAll(".opts button").forEach(b=>b.onclick=()=>answer(+b.dataset.n));
+}
+function answer(n){
+  const x=list[i],ok=n===x.a;
+  res.push({x,ok});
+  document.querySelectorAll(".opts button").forEach((b,k)=>{b.disabled=true;if(k===x.a)b.classList.add("ok");else if(k===n)b.classList.add("bad")});
+  const fb=$("#fb");fb.hidden=false;fb.className="fb "+(ok?"ok":"bad");
+  fb.innerHTML=`<b>${ok?"✓ Richtig":"✗ Nicht ganz. Richtig ist: "+x.o[x.a]}</b>${x.e}<br><button class="go" id="next">${i+1<list.length?"Weiter":"Ergebnis ansehen"}</button>`;
+  $("#next").onclick=()=>{i++;show()};$("#next").focus();
+}
+function done(){
+  $("#fill").style.width="100%";$("#count").textContent="Fertig";
+  const r=res.filter(v=>v.ok).length,w=res.filter(v=>!v.ok);
+  const rows=S.map((n,k)=>{const a=res.filter(v=>v.x.s===k);return a.length?`<div class="row"><span>${n}</span><b>${a.filter(v=>v.ok).length} von ${a.length}</b></div>`:""}).join("");
+  const msg=r/res.length>=.85?"Sehr gut, das sitzt.":r/res.length>=.6?"Gute Basis. Schau dir die falschen Fragen noch einmal an.":"Noch Luft nach oben. Wiederhole die falschen Fragen.";
+  $("#app").innerHTML=`<p class="sec">Ergebnis</p><p class="big">${r} von ${res.length} richtig</p><p>${msg}</p>${rows}${w.length?`<h2 style="margin-top:20px">Das solltest du wiederholen</h2>${w.map(v=>`<div class="wr"><b>${v.x.q}</b><br>Richtig: ${v.x.o[v.x.a]}<br>${v.x.e}</div>`).join("")}`:""}<div class="btns" style="margin-top:16px">${w.length?`<button class="go" id="again">Nur falsche Fragen wiederholen</button>`:""}<button class="go alt" id="all">Alles neu, gemischt</button></div>`;
+  if(w.length)$("#again").onclick=()=>start(w.map(v=>v.x),true);
+  $("#all").onclick=()=>start(Q,true);
+}
+start(Q,false);
+</script>
+</body>
+</html>
