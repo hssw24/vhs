@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Aggregatzustände – Quiz</title>
+<style>
+:root{--bg:#F2F6F9;--ink:#13283B;--mute:#53677A;--card:#fff;--line:#C9D6E0;--accent:#1F6F9C;--ok:#1B7A4B;--okbg:#E3F4EA;--bad:#B3361F;--badbg:#FBE8E3;--steam:#C4622D;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0F1B26;--ink:#E6EEF4;--mute:#9FB2C2;--card:#172A3A;--line:#2C4356;--accent:#6DB8E3;--ok:#5CC58C;--okbg:#153525;--bad:#F08A72;--badbg:#3A1D17;--steam:#E58A55;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0F1B26;--ink:#E6EEF4;--mute:#9FB2C2;--card:#172A3A;--line:#2C4356;--accent:#6DB8E3;--ok:#5CC58C;--okbg:#153525;--bad:#F08A72;--badbg:#3A1D17;--steam:#E58A55;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:640px;margin:0 auto;padding:20px 16px 48px}
+h1{font:700 1.5rem/1.2 Georgia,"Iowan Old Style",serif;margin:0 0 4px}
+h2{font:600 1.25rem/1.35 Georgia,"Iowan Old Style",serif;margin:6px 0 18px}
+.sub{color:var(--mute);margin:0 0 16px;font-size:.95rem}
+.bar{height:10px;border-radius:5px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--steam));transition:width .4s}
+.scale{display:flex;justify-content:space-between;font-size:.8rem;color:var(--mute);margin:4px 0 20px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 18px}
+.sec{color:var(--accent);font-weight:600;font-size:.9rem;margin:0}
+.opts{display:grid;gap:10px}
+button{font:inherit;color:inherit;cursor:pointer}
+.opts button{text-align:left;padding:13px 14px;background:var(--bg);border:2px solid var(--line);border-radius:10px}
+.opts button:hover:not(:disabled){border-color:var(--accent)}
+.opts button:disabled{cursor:default}
+.opts .ok{border-color:var(--ok);background:var(--okbg)}
+.opts .bad{border-color:var(--bad);background:var(--badbg)}
+.fb{margin-top:18px;padding:14px;border-radius:10px;border-left:5px solid var(--line);background:var(--bg)}
+.fb.ok{border-color:var(--ok)}.fb.bad{border-color:var(--bad)}
+.fb b{display:block;margin-bottom:4px}
+.go{margin-top:16px;padding:12px 22px;border:0;border-radius:10px;background:var(--accent);color:var(--bg);font-weight:600}
+.alt{background:transparent;border:2px solid var(--accent);color:var(--accent)}
+button:focus-visible{outline:3px solid var(--steam);outline-offset:2px}
+.big{font:700 2.4rem/1.1 Georgia,serif;margin:4px 0}
+.row{display:flex;justify-content:space-between;border-bottom:1px solid var(--line);padding:8px 0}
+.wr{margin:10px 0;padding:10px 12px;background:var(--bg);border-radius:8px;font-size:.95rem}
+.btns{display:flex;gap:10px;flex-wrap:wrap}
+@media (prefers-reduced-motion:reduce){.bar i{transition:none}}
+</style>
+</head>
+<body>
+<main>
+<h1>Aggregatzustände – Quiz</h1>
+<p class="sub">(Early access: Bei Fehler bitte Bildschirmfoto schicken!)</p>
+<div class="bar" role="progressbar" aria-label="Fortschritt"><i id="fill"></i></div>
+<div class="scale"><span>0 K</span><span id="count"></span><span>200 °C</span></div>
+<div class="card" id="app"></div>
+</main>
+<script>
+const R=["Richtig","Falsch"];
+const S=["Teil A: Vorkenntnisse","Teil B: 1 kg Wasser erhitzen","Teil C: Anwendungen"];
+const T=(s,q,w,e)=>({s,q,o:R,a:w?0:1,e,tf:1});
+const M=(s,q,o,a,e)=>({s,q,o,a,e});
+const Q=[
+T(0,"Im festen Zustand bewegen sich die Teilchen gar nicht.",0,"Falsch. Die Teilchen sitzen auf festen Plätzen, schwingen dort aber ständig. Je wärmer, desto stärker schwingen sie."),
+M(0,"Welche Beschreibung passt zum flüssigen Zustand?",["Feste Plätze, die Teilchen schwingen nur","Die Teilchen berühren sich, gleiten aber aneinander vorbei","Große Abstände, die Teilchen fliegen frei","Die Teilchen stehen still"],1,"Flüssig = Teilchen berühren sich, sind aber nicht festgelegt. Tafelanker: Haufen von Kugeln. Fest wäre das Gitter, gasförmig die verstreuten Punkte."),
+M(0,"Wie heißt der Übergang von gasförmig zu flüssig?",["Verdampfen","Erstarren","Kondensieren","Schmelzen"],2,"Gas → flüssig heißt kondensieren. Verdampfen ist die Gegenrichtung (flüssig → gasförmig), erstarren heißt flüssig → fest."),
+T(0,"Sublimieren bedeutet, dass ein Stoff direkt von fest zu gasförmig übergeht.",1,"Richtig. Die flüssige Phase wird übersprungen. Die Gegenrichtung (gasförmig → fest) heißt resublimieren."),
+T(0,"Die Temperatur ist ein Maß für die mittlere Bewegungsenergie der Teilchen.",1,"Richtig. Wärmer heißt: Die Teilchen bewegen sich im Mittel schneller."),
+M(0,"Was gilt am absoluten Nullpunkt?",["Wasser fängt an zu gefrieren","Die Bewegung der Teilchen ist (fast) null, kälter geht nicht","Wasser siedet","Er liegt bei 0 °C"],1,"Der absolute Nullpunkt (0 K = −273,15 °C) ist die tiefstmögliche Temperatur. 0 °C ist nur der Schmelzpunkt von Eis."),
+M(0,"Wie hoch ist der Schmelzpunkt von Wasser (1,013 bar) in Kelvin?",["0 K","100 K","273,15 K","373,15 K"],2,"K = °C + 273,15, also 0 °C = 273,15 K. 373,15 K ist der Siedepunkt (100 °C)."),
+M(0,"Wie hoch ist der Siedepunkt von Wasser in °F?",["100 °F","212 °F","32 °F","392 °F"],1,"Siedepunkt = 212 °F, Schmelzpunkt = 32 °F. 392 °F entspricht dem Zielpunkt 200 °C."),
+T(0,"Anders Celsius legte den Siedepunkt von Anfang an auf 100 und den Schmelzpunkt auf 0.",0,"Falsch. Ursprünglich war es umgekehrt (100 = Eis, 0 = Siedepunkt). Die Skala wurde erst später gedreht."),
+M(0,"Wie viel Kelvin sind 200 °C?",["73,15 K","373,15 K","473,15 K","200 K"],2,"K = °C + 273,15 = 200 + 273,15 = 473,15 K."),
+T(0,"Ein Temperaturschritt von 1 K ist genauso groß wie ein Schritt von 1 °C.",1,"Richtig. Kelvin nutzt die Celsius-Schritte, startet aber am absoluten Nullpunkt. Darum hat die Umrechnung nur eine Verschiebung um 273,15."),
+M(0,"Welche Formel gilt für das Erwärmen innerhalb eines Zustands?",["Q = c · m · ΔT","Q = q · m","Q = m / ΔT","Q = c · q"],0,"Q = c · m · ΔT (c = spezifische Wärmekapazität). Q = q · m gilt nur beim Zustandswechsel (Schmelz- bzw. Verdampfungswärme)."),
+T(0,"Beim Schmelzen von Eis steigt die Temperatur weiter an, nur langsamer.",0,"Falsch. Die Temperatur bleibt bei 0 °C. Die zugeführte Energie löst die Bindungen im Gitter (Q = q · m), sie macht die Teilchen nicht schneller."),
+M(1,"Wie viel Wärme braucht 1 kg Eis von 0 K bis 0 °C (c = 2,1 kJ/(kg·K))?",["334 kJ","574 kJ","419 kJ","2257 kJ"],1,"Q = 2,1 · 1 · 273,15 ≈ 574 kJ. Die 334 kJ sind die Schmelzwärme, 419 kJ erwärmen flüssiges Wasser."),
+M(1,"Wie viel Energie braucht das Schmelzen von 1 kg Eis bei 0 °C?",["334 kJ","419 kJ","574 kJ","2257 kJ"],0,"Q = q · m = 334 kJ/kg · 1 kg = 334 kJ. Während des Schmelzens bleibt die Temperatur bei 0 °C."),
+M(1,"Wie viel Wärme braucht 1 kg flüssiges Wasser von 0 °C bis 100 °C?",["41,9 kJ","4190 kJ","419 kJ","334 kJ"],2,"Q = 4,19 · 1 · 100 = 419 kJ. Achte auf die Kommastelle: 4,19 · 100 ergibt 419."),
+T(1,"Das Verdampfen von 1 kg Wasser braucht mehr als das Fünffache der Energie, die zum Erwärmen von 0 °C auf 100 °C nötig ist.",1,"Richtig. 2257 kJ gegenüber 419 kJ, das Verhältnis ist etwa 5,4. Beim Verdampfen müssen alle Teilchen voneinander gelöst werden."),
+M(1,"Welche Phase braucht die größte Wärmemenge?",["Schmelzen","Eis erwärmen","Dampf erwärmen","Verdampfen"],3,"Verdampfen (2257 kJ) ist die größte Einzelportion. Eis erwärmen 574 kJ, Schmelzen 334 kJ, Dampf erwärmen 200 kJ."),
+M(1,"Wie hoch ist die Gesamtbilanz für 1 kg von 0 K bis 200 °C?",["≈ 3784 kJ","≈ 3210 kJ","≈ 4120 kJ","≈ 2257 kJ"],0,"574 + 334 + 419 + 2257 + 200 = 3784 kJ. Die 2257 kJ allein sind schon mehr als die Hälfte der Summe."),
+T(1,"Im Temperatur-Wärme-Diagramm sind die waagrechten Plateaus die Stellen, an denen der Zustand wechselt.",1,"Richtig. Merksatz: Auf den Schrägen wird es wärmer, auf den Plateaus wird der Zustand gewechselt. Das Plateau bei 100 °C ist deutlich länger als das bei 0 °C."),
+M(1,"Welche Schräge im Diagramm ist am flachsten?",["Eis erwärmen","Flüssiges Wasser erwärmen","Dampf erwärmen"],1,"Flüssiges Wasser hat mit 4,19 kJ/(kg·K) das größte c. Man braucht viel Wärme für jedes Kelvin, deshalb steigt die Kurve langsam."),
+M(2,"Welche Rolle spielt die Kondensation bei der Föhnwetterlage?",["Der Wasserdampf gibt dabei Wärme frei","Der Wasserdampf nimmt dabei Wärme auf","Die Luft wird dadurch trockener und kälter","Sie spielt keine Rolle"],0,"Feuchte Luft steigt auf, kühlt ab, der Dampf kondensiert und gibt Wärme frei. Auf der anderen Seite sinkt die trockene Luft ab und wird deshalb wärmer."),
+M(2,"Wo verdampft das Kältemittel im Kühlschrank, und was passiert dabei mit der Wärme?",["Außen, es gibt Wärme ab","Innen, es gibt Wärme ab","Innen, es nimmt Wärme auf","Außen, es nimmt Wärme auf"],2,"Innen verdampft es und nimmt Wärme auf (Innenraum kühlt). Außen kondensiert es und gibt Wärme ab."),
+T(2,"Eine Wärmepumpe nutzt das gleiche Prinzip wie ein Kühlschrank, nur umgekehrt zum Heizen.",1,"Richtig. Die Wärme, die beim Kondensieren abgegeben wird, wird zum Heizen genutzt. Auch die Klimaanlage arbeitet wie ein Kühlschrank für den Raum."),
+M(2,"Warum ist das Klima an der Küste meist mild?",["Wasser hat eine hohe spezifische Wärmekapazität und speichert viel Wärme","Wasser hat keine Wärmekapazität","Meerwasser siedet schon bei 0 °C","Wasser verdampft nie"],0,"Mit c = 4,19 kJ/(kg·K) nimmt Wasser viel Wärme auf und gibt sie langsam ab. Das gleicht Temperaturschwankungen aus."),
+M(2,"Auf welchem Vorgang beruht die Gefriertrocknung?",["Kondensieren","Erstarren","Sublimation","Schmelzen"],2,"Beim Gefriertrocknen geht das Eis direkt vom festen in den gasförmigen Zustand über, also durch Sublimation.")
+];
+const $=s=>document.querySelector(s);
+const shuffle=a=>{for(let j=a.length-1;j>0;j--){const k=Math.floor(Math.random()*(j+1));[a[j],a[k]]=[a[k],a[j]]}return a};
+let list=[],i=0,res=[];
+function start(src,mix){
+  list=src.map(x=>({...x}));
+  if(mix){shuffle(list);list.forEach(x=>{if(!x.tf){const p=shuffle(x.o.map((_,n)=>n));x.o=p.map(n=>x.o[n]);x.a=p.indexOf(x.a)}})}
+  i=0;res=[];show();
+}
+function show(){
+  if(i>=list.length)return done();
+  const x=list[i];
+  $("#fill").style.width=(i/list.length*100)+"%";
+  $("#count").textContent="Frage "+(i+1)+" von "+list.length;
+  $("#app").innerHTML=`<p class="sec">${S[x.s]}</p><h2>${x.q}</h2><div class="opts">${x.o.map((t,n)=>`<button data-n="${n}">${t}</button>`).join("")}</div><div class="fb" id="fb" aria-live="polite" hidden></div>`;
+  $("#app").querySelectorAll(".opts button").forEach(b=>b.onclick=()=>answer(+b.dataset.n));
+}
+function answer(n){
+  const x=list[i],ok=n===x.a;
+  res.push({x,ok});
+  document.querySelectorAll(".opts button").forEach((b,k)=>{b.disabled=true;if(k===x.a)b.classList.add("ok");else if(k===n)b.classList.add("bad")});
+  const fb=$("#fb");fb.hidden=false;fb.className="fb "+(ok?"ok":"bad");
+  fb.innerHTML=`<b>${ok?"✓ Richtig":"✗ Nicht ganz. Richtig ist: "+x.o[x.a]}</b>${x.e}<br><button class="go" id="next">${i+1<list.length?"Weiter":"Ergebnis ansehen"}</button>`;
+  $("#next").onclick=()=>{i++;show()};$("#next").focus();
+}
+function done(){
+  $("#fill").style.width="100%";$("#count").textContent="Fertig";
+  const r=res.filter(v=>v.ok).length,w=res.filter(v=>!v.ok);
+  const rows=S.map((n,k)=>{const a=res.filter(v=>v.x.s===k);return a.length?`<div class="row"><span>${n}</span><b>${a.filter(v=>v.ok).length} von ${a.length}</b></div>`:""}).join("");
+  const msg=r/res.length>=.85?"Sehr gut, das sitzt.":r/res.length>=.6?"Gute Basis. Schau dir die falschen Fragen noch einmal an.":"Noch Luft nach oben. Wiederhole die falschen Fragen.";
+  $("#app").innerHTML=`<p class="sec">Ergebnis</p><p class="big">${r} von ${res.length} richtig</p><p>${msg}</p>${rows}${w.length?`<h2 style="margin-top:20px">Das solltest du wiederholen</h2>${w.map(v=>`<div class="wr"><b>${v.x.q}</b><br>Richtig: ${v.x.o[v.x.a]}<br>${v.x.e}</div>`).join("")}`:""}<div class="btns" style="margin-top:16px">${w.length?`<button class="go" id="again">Nur falsche Fragen wiederholen</button>`:""}<button class="go alt" id="all">Alles neu, gemischt</button></div>`;
+  if(w.length)$("#again").onclick=()=>start(w.map(v=>v.x),true);
+  $("#all").onclick=()=>start(Q,true);
+}
+start(Q,false);
+</script>
+</body>
+</html>
