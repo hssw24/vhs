@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<!--
+  ============================================================
+  WARTUNGSSEITE für habelsberger.com (Lernprojekt)
+  ============================================================
+  Aufbau der Datei:
+    1. <style>  -> das Aussehen (CSS)
+    2. <body>   -> Kopfzeile, Karte in der Mitte, Fußzeile
+  Es wird kein JavaScript gebraucht.
+
+  Zum Anpassen: Suche nach "ANPASSEN".
+  Das Logo ist nach dem Screenshot nachgezeichnet.
+-->
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1"> <!-- Handy-tauglich -->
+  <title>Wartungsarbeiten</title>
+
+  <style>
+    /* ANPASSEN: Alle Farben an einem Ort. Ändere sie hier, und die ganze Seite ändert sich. */
+    :root {
+      --bg:        #14112b;  /* Seitenhintergrund (sehr dunkles Blau) */
+      --bg-kopf:   #1c1a3a;  /* Hintergrund der Kopfzeile */
+      --karte:     #1f1c3f;  /* Hintergrund der Karte */
+      --rand:      #2f2a5f;  /* feine Rahmenlinien */
+      --akzent:    #9b87f5;  /* Lila für Symbol, Punkt und Links */
+      --akzent-bg: #2d2656;  /* dunkles Lila für Kreis und Pille */
+      --text:      #ffffff;
+      --text-hell: #b9b4d8;  /* gedämpfter Text */
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;            /* mindestens so hoch wie der Bildschirm */
+      display: flex;                /* Flexbox: Kopf, Mitte, Fuß untereinander */
+      flex-direction: column;
+      background: var(--bg);
+      color: var(--text-hell);
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      line-height: 1.6;
+    }
+
+    /* ---------- Kopfzeile ---------- */
+    .kopf {
+      background: var(--bg-kopf);
+      border-bottom: 1px solid var(--rand);
+      padding: 1rem 1.5rem;
+    }
+    .logo {
+      display: inline-flex;       /* Symbol und Text nebeneinander */
+      align-items: center;
+      gap: .6rem;
+      font-size: 1.8rem;
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    /* ---------- Hauptbereich ---------- */
+    main {
+      flex: 1;                      /* nimmt den ganzen freien Platz */
+      display: grid;
+      place-items: center;          /* Karte genau in der Mitte */
+      padding: 2rem 1.25rem;
+    }
+
+    .karte {
+      width: 100%;
+      max-width: 520px;
+      text-align: center;
+      background: var(--karte);
+      border: 1px solid var(--rand);
+      border-radius: 28px;
+      padding: 3rem 2rem;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, .3); /* weicher Schatten */
+    }
+
+    /* Runder Kreis um das Zahnrad */
+    .symbol {
+      width: 96px; height: 96px;
+      margin: 0 auto 1.75rem;       /* auto links/rechts = zentriert */
+      display: grid; place-items: center;
+      border-radius: 50%;           /* 50% = Kreis */
+      background: var(--akzent-bg);
+      color: var(--akzent);         /* das SVG übernimmt diese Farbe (currentColor) */
+    }
+    /* Langsame Drehung. Wird abgeschaltet, wenn Nutzer weniger Bewegung wünschen (siehe unten). */
+    .symbol svg { animation: drehen 12s linear infinite; }
+    @keyframes drehen { to { transform: rotate(360deg); } }
+
+    h1 { color: var(--text); font-size: 2rem; margin: 0 0 1rem; }
+    p  { margin: 0 0 1rem; font-size: 1.1rem; }
+
+    /* Die Pille "Wartungsmodus aktiv" */
+    .pille {
+      display: inline-flex;
+      align-items: center;
+      gap: .6rem;
+      margin-top: 1.5rem;
+      padding: .7rem 1.5rem;
+      border-radius: 999px;         /* sehr hoher Wert = runde Enden */
+      background: var(--akzent-bg);
+      color: #cfc4ff;
+      font-weight: 600;
+    }
+    .pille::before {                /* ::before = Element vor dem Text: der Punkt */
+      content: "";
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: var(--akzent);
+      /* Blinken: "blinken" ist der Name der Animation (siehe @keyframes unten).
+         2s = Dauer eines Durchlaufs (größer = langsamer), infinite = endlos,
+         ease-in-out = weiches An- und Ausblenden statt hartem Umschalten. */
+      animation: blinken 2s ease-in-out infinite;
+    }
+    /* @keyframes beschreibt den Ablauf: Mitte der Zeit (50%) = fast durchsichtig */
+    @keyframes blinken {
+      0%, 100% { opacity: 1; }
+      50%      { opacity: .2; }
+    }
+
+    /* ---------- Fußzeile ---------- */
+    .fuss { text-align: center; padding: 1.5rem; font-size: .95rem; }
+    .fuss a { color: var(--akzent); font-weight: 600; text-decoration: none; }
+    .fuss a:hover { text-decoration: underline; }
+
+    /* Barrierefreiheit: sichtbarer Fokus für Tastatur-Nutzer */
+    a:focus-visible { outline: 3px solid var(--akzent); outline-offset: 3px; }
+
+    /* Keine Animation, wenn der Nutzer das im System so eingestellt hat */
+    @media (prefers-reduced-motion: reduce) {
+      .symbol svg,
+      .pille::before { animation: none; }
+    }
+
+    /* Auf kleinen Handys etwas weniger Innenabstand */
+    @media (max-width: 480px) {
+      .karte { padding: 2.25rem 1.25rem; }
+      h1 { font-size: 1.7rem; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- KOPFZEILE -->
+  <header class="kopf">
+    <!-- ANPASSEN: Ersetze das SVG durch dein eigenes Logo, z. B. <img src="logo.svg" alt="Logo"> -->
+    <a href="#" class="logo" aria-label="Startseite">
+      <!-- Symbol: weißer Ring, schwarzer Kreis, weißes Dreieck (nachgezeichnet nach dem Screenshot) -->
+      <svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true">
+        <circle cx="20" cy="20" r="19" fill="#ffffff"/>
+        <circle cx="20" cy="20" r="15" fill="#000000"/>
+        <path d="M20 12 L28 26 L12 26 Z" fill="#ffffff"/>
+      </svg>
+      <span>habelsberger.com</span>
+    </a>
+  </header>
+
+  <!-- HAUPTBEREICH mit der Karte -->
+  <main>
+    <section class="karte">
+
+      <!-- Zahnrad als SVG (Vektorgrafik): scharf in jeder Größe, Farbe über "currentColor" -->
+      <div class="symbol">
+        <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+      </div>
+
+      <!-- ANPASSEN: Texte -->
+      <h1>Wartungsarbeiten</h1>
+      <p>Wir führen gerade Wartungsarbeiten durch, um habelsberger.com für Sie zu verbessern. Wir sind in Kürze wieder für Sie da.</p>
+      <p>Vielen Dank für Ihre Geduld.</p>
+
+      <span class="pille">Wartungsmodus aktiv</span>
+    </section>
+  </main>
+
+  <!-- FUSSZEILE -->
+  <footer class="fuss">
+    © 2026 <a href="https://habelsberger.com">habelsberger.com</a>
+  </footer>
+
+</body>
+</html>
