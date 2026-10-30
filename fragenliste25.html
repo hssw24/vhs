@@ -1,0 +1,403 @@
+
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Lern-Bot – Fragenverwaltung</title>
+
+<style>
+
+/* =====================================
+   GRUNDEINSTELLUNGEN
+===================================== */
+
+body {
+  font-family: Arial, sans-serif;
+  background: #f2f4f7;
+  color: #222;
+  margin: 20px;
+  line-height: 1.5;
+}
+
+h2 {
+  color: #234b70;
+}
+
+h3 {
+  color: #234b70;
+  margin-bottom: 8px;
+}
+
+/* =====================================
+   SUCHFELD
+===================================== */
+
+input {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  border: 1px solid #aaa;
+  border-radius: 6px;
+  margin-bottom: 10px;
+  background: white;
+}
+
+/* =====================================
+   FRAGENLISTE
+===================================== */
+
+select {
+  box-sizing: border-box;
+  width: 100%;
+  height: 350px;
+  padding: 8px;
+  font-size: 16px;
+  border: 1px solid #aaa;
+  border-radius: 6px;
+  background: white;
+}
+
+option {
+  padding: 7px;
+}
+
+/* =====================================
+   ANTWORTBEREICH
+===================================== */
+
+#antwortBereich {
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 15px;
+  margin-top: 20px;
+  min-height: 100px;
+}
+
+#antwort {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  line-height: 1.6;
+}
+
+/* =====================================
+   SCHALTFLÄCHE
+===================================== */
+
+button {
+  margin-top: 12px;
+  padding: 12px 20px;
+  font-size: 16px;
+  background: #245b88;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+button:active {
+  background: #173c5c;
+}
+
+/* =====================================
+   STATUSANZEIGE
+===================================== */
+
+#status {
+  font-size: 14px;
+  color: #555;
+  margin-top: 12px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h2>Freigegebene Fragen</h2>
+
+<p>
+  Fragen und Antworten aus der D1-Datenbank
+</p>
+
+
+<!-- =====================================
+     SUCHFELD
+===================================== -->
+
+<h3>Fragen suchen</h3>
+
+<input
+  type="search"
+  id="suche"
+  placeholder="Suchbegriff eingeben ..."
+  oninput="fragenFiltern()"
+>
+
+
+<!-- =====================================
+     FRAGENLISTE
+===================================== -->
+
+<h3>Fragen auswählen</h3>
+
+<select
+  id="fragenListe"
+  size="15"
+  onchange="antwortAnzeigen()"
+>
+  <option>Fragen werden geladen ...</option>
+</select>
+
+
+<!-- =====================================
+     ANTWORTANZEIGE
+===================================== -->
+
+<div id="antwortBereich">
+
+  <h3>Antwort</h3>
+
+  <div id="antwort">
+    Bitte eine Frage auswählen.
+  </div>
+
+</div>
+
+
+<!-- =====================================
+     AKTUALISIEREN
+===================================== -->
+
+<button onclick="fragenLaden()">
+  Fragen aktualisieren
+</button>
+
+
+<!-- STATUSANZEIGE -->
+
+<p id="status">
+  Bereit.
+</p>
+
+
+<script>
+
+// ==========================================
+// 1. CLOUDFLARE WORKER ADRESSE
+// ==========================================
+
+const WORKER_URL =
+  "https://schueler-lern-bot.hssw.workers.dev";
+
+
+// ==========================================
+// 2. DATENSPEICHER
+// ==========================================
+
+// Hier werden alle geladenen Fragen und
+// Antworten vorübergehend gespeichert.
+
+let alleFragen = [];
+
+
+// ==========================================
+// 3. FRAGEN AUS DER DATENBANK LADEN
+// ==========================================
+
+async function fragenLaden() {
+
+  const liste =
+    document.getElementById("fragenListe");
+
+  const status =
+    document.getElementById("status");
+
+  const antwort =
+    document.getElementById("antwort");
+
+  // Alte Daten entfernen
+  liste.innerHTML = "";
+
+  antwort.textContent =
+    "Bitte eine Frage auswählen.";
+
+  status.textContent =
+    "Datenbank wird geladen ...";
+
+  try {
+
+    // Datenbank über den Worker abfragen
+    const response = await fetch(
+      WORKER_URL + "/fragen"
+    );
+
+    // Prüfen, ob die Abfrage erfolgreich war
+    if (!response.ok) {
+      throw new Error(
+        "HTTP-Fehler " + response.status
+      );
+    }
+
+    // JSON-Daten übernehmen
+    alleFragen = await response.json();
+
+    // Prüfen, ob die Daten korrekt sind
+    if (!Array.isArray(alleFragen)) {
+      throw new Error("Ungültiges Datenformat");
+    }
+
+    // Fragen alphabetisch sortieren
+    alleFragen.sort(function(a, b) {
+      return (a.question || "").localeCompare(
+        b.question || "",
+        "de",
+        { sensitivity: "base" }
+      );
+    });
+
+    // Suchfeld leeren
+    document.getElementById("suche").value = "";
+
+    // Alle Fragen anzeigen
+    fragenFiltern();
+
+    status.textContent =
+      alleFragen.length +
+      " Fragen erfolgreich geladen.";
+
+  }
+
+  catch (error) {
+
+    status.textContent =
+      "Fehler: " + error.message;
+
+    liste.add(
+      new Option("Fragen konnten nicht geladen werden.", "")
+    );
+
+    console.error(error);
+
+  }
+
+}
+
+
+// ==========================================
+// 4. FRAGENLISTE FILTERN
+// ==========================================
+
+function fragenFiltern() {
+
+  const suchfeld =
+    document.getElementById("suche");
+
+  const liste =
+    document.getElementById("fragenListe");
+
+  const status =
+    document.getElementById("status");
+
+  // Suchbegriff übernehmen
+  const suchbegriff =
+    suchfeld.value.toLocaleLowerCase("de");
+
+  // Bisherige Einträge entfernen
+  liste.innerHTML = "";
+
+  // Antwort zurücksetzen
+  document.getElementById("antwort").textContent =
+    "Bitte eine Frage auswählen.";
+
+  // Passende Fragen herausfiltern
+  const treffer = alleFragen.filter(function(eintrag) {
+
+    const frage =
+      (eintrag.question || "").toLocaleLowerCase("de");
+
+    return frage.includes(suchbegriff);
+
+  });
+
+  // Gefilterte Fragen anzeigen
+  treffer.forEach(function(eintrag) {
+
+    const option =
+      document.createElement("option");
+
+    // Fragetext anzeigen
+    option.textContent = eintrag.question;
+
+    // Zugehörigen Datensatz intern zuordnen
+    option.value = alleFragen.indexOf(eintrag);
+
+    liste.appendChild(option);
+
+  });
+
+  // Anzahl der Treffer anzeigen
+  status.textContent =
+    treffer.length + " von " +
+    alleFragen.length + " Fragen angezeigt.";
+
+  // Keine Treffer?
+  if (treffer.length === 0) {
+
+    liste.add(
+      new Option("Keine passende Frage gefunden.", "")
+    );
+
+  }
+
+}
+
+
+// ==========================================
+// 5. ANTWORT ZUR AUSGEWÄHLTEN FRAGE ZEIGEN
+// ==========================================
+
+function antwortAnzeigen() {
+
+  const liste =
+    document.getElementById("fragenListe");
+
+  const antwort =
+    document.getElementById("antwort");
+
+  // Index des ausgewählten Datensatzes
+  const index = liste.value;
+
+  // Prüfen, ob ein gültiger Eintrag gewählt wurde
+  if (index === "" || !alleFragen[index]) {
+    return;
+  }
+
+  // Zugehörige Antwort auslesen
+  const datensatz = alleFragen[index];
+
+  // Antwort anzeigen
+  antwort.textContent =
+    datensatz.answer || "Keine Antwort hinterlegt.";
+
+}
+
+
+// ==========================================
+// 6. AUTOMATISCH BEIM ÖFFNEN LADEN
+// ==========================================
+
+window.addEventListener(
+  "DOMContentLoaded",
+  fragenLaden
+);
+
+</script>
+
+</body>
+</html>
