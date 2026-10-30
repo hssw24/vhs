@@ -1,0 +1,191 @@
+
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+  <title>Lern-Bot – Fragenübersicht</title>
+
+  <style>
+
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background: #f4f4f4;
+      color: #222;
+    }
+
+    h2 {
+      color: #234b70;
+    }
+
+    select {
+      width: 100%;
+      min-height: 350px;
+      padding: 10px;
+      font-size: 16px;
+      background: white;
+      border: 1px solid #999;
+      border-radius: 6px;
+    }
+
+    option {
+      padding: 8px;
+    }
+
+    button {
+      margin-top: 12px;
+      padding: 12px 20px;
+      font-size: 16px;
+      background: #245b88;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    #status {
+      margin-top: 12px;
+      font-size: 14px;
+    }
+
+  </style>
+</head>
+
+<body>
+
+  <h2>Freigegebene Fragen</h2>
+
+  <p>Alle Fragen aus der D1-Datenbank:</p>
+
+  <!-- Listenfeld für sämtliche Fragen -->
+  <select id="fragenListe" size="15">
+    <option>Fragen werden geladen ...</option>
+  </select>
+
+  <br>
+
+  <!-- Fragen erneut laden -->
+  <button onclick="fragenLaden()">
+    Fragen neu laden
+  </button>
+
+  <!-- Statusmeldung -->
+  <p id="status"></p>
+
+
+  <script>
+
+    // ==========================================
+    // CLOUDFLARE WORKER ADRESSE
+    // ==========================================
+
+    // Hier steht die Adresse deines Workers.
+    // Die HTML-Datei kann unabhängig gespeichert
+    // und aufgerufen werden.
+
+    const WORKER_URL =
+      "https://schueler-lern-bot.hssw.workers.dev";
+
+    // ==========================================
+    // FRAGEN AUS DER D1-DATENBANK LADEN
+    // ==========================================
+
+    async function fragenLaden() {
+
+      const liste =
+        document.getElementById("fragenListe");
+
+      const status =
+        document.getElementById("status");
+
+      liste.innerHTML = "";
+
+      status.textContent =
+        "Datenbank wird abgefragt ...";
+
+      try {
+
+        // Direkter Aufruf des Workers
+        const antwort = await fetch(
+          WORKER_URL + "/fragen"
+        );
+
+        // Fehler beim Datenbankzugriff prüfen
+        if (!antwort.ok) {
+          throw new Error(
+            "HTTP-Fehler: " + antwort.status
+          );
+        }
+
+        // Antwort als JSON einlesen
+        const fragen = await antwort.json();
+
+        // Prüfen, ob Daten vorhanden sind
+        if (!Array.isArray(fragen)) {
+          throw new Error(
+            "Ungültiges Datenbankformat"
+          );
+        }
+
+        if (fragen.length === 0) {
+
+          liste.add(
+            new Option("Keine Fragen vorhanden", "")
+          );
+
+          status.textContent =
+            "Keine Fragen gefunden.";
+
+          return;
+        }
+
+        // Alle Fragen in das Listenfeld eintragen
+        fragen.forEach(function(frage) {
+
+          const option =
+            document.createElement("option");
+
+          option.textContent = frage;
+
+          liste.appendChild(option);
+
+        });
+
+        status.textContent =
+          fragen.length +
+          " Fragen erfolgreich geladen.";
+
+      }
+
+      catch (fehler) {
+
+        status.textContent =
+          "Fehler: " + fehler.message;
+
+        liste.add(
+          new Option(
+            "Fragen konnten nicht geladen werden.",
+            ""
+          )
+        );
+
+        console.error(fehler);
+
+      }
+
+    }
+
+    // Beim Öffnen automatisch laden
+    window.addEventListener(
+      "DOMContentLoaded",
+      fragenLaden
+    );
+
+  </script>
+
+</body>
+</html>
