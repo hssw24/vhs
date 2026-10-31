@@ -1,0 +1,536 @@
+
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Lern-Bot – Fragenverwaltung</title>
+
+<style>
+
+/* =====================================
+   1. GRUNDEINSTELLUNGEN
+===================================== */
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background: #f2f4f7;
+  color: #222;
+  margin: 15px;
+  line-height: 1.5;
+}
+
+h2 {
+  color: #234b70;
+  margin-top: 5px;
+}
+
+h3 {
+  color: #234b70;
+  margin-bottom: 8px;
+}
+
+
+/* =====================================
+   2. SUCHFELD
+===================================== */
+
+#suche {
+  width: 100%;
+  padding: 13px;
+  font-size: 16px;
+  border: 1px solid #aaa;
+  border-radius: 6px;
+  background: white;
+  margin-bottom: 12px;
+}
+
+
+/* =====================================
+   3. FRAGENLISTE
+===================================== */
+
+#fragenListe {
+  width: 100%;
+  max-height: 450px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #aaa;
+  border-radius: 6px;
+  padding: 6px;
+}
+
+/* Jede Frage ist eine eigene Schaltfläche */
+
+.frageEintrag {
+  display: block;
+  width: 100%;
+
+  /* Lange Texte vollständig umbrechen */
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: normal;
+
+  text-align: left;
+  line-height: 1.5;
+  font-size: 16px;
+
+  padding: 12px;
+  margin-bottom: 6px;
+
+  color: #222;
+  background: white;
+
+  border: 1px solid #ddd;
+  border-radius: 6px;
+
+  cursor: pointer;
+}
+
+/* Ausgewählte Frage */
+
+.frageEintrag.aktiv {
+  background: #dcecff;
+  border: 2px solid #245b88;
+  font-weight: bold;
+}
+
+
+/* =====================================
+   4. ANTWORTBEREICH
+===================================== */
+
+#antwortBereich {
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+
+  padding: 15px;
+  margin-top: 20px;
+
+  min-height: 120px;
+}
+
+/* Auch lange Antworten vollständig anzeigen */
+
+#antwort {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: normal;
+  line-height: 1.7;
+}
+
+
+/* =====================================
+   5. SCHALTFLÄCHE
+===================================== */
+
+button.aktualisieren {
+  margin-top: 15px;
+  padding: 13px 20px;
+
+  font-size: 16px;
+
+  background: #245b88;
+  color: white;
+
+  border: none;
+  border-radius: 6px;
+
+  cursor: pointer;
+}
+
+
+/* =====================================
+   6. STATUSANZEIGE
+===================================== */
+
+#status {
+  font-size: 14px;
+  color: #555;
+  margin-top: 12px;
+}
+
+
+/* =====================================
+   7. SMARTPHONE-ANPASSUNG
+===================================== */
+
+@media (max-width: 600px) {
+
+  body {
+    margin: 10px;
+  }
+
+  #fragenListe {
+    max-height: 400px;
+  }
+
+  .frageEintrag {
+    font-size: 16px;
+    padding: 12px;
+  }
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+<!-- =====================================
+     SEITENÜBERSCHRIFT
+===================================== -->
+
+<h2>Freigegebene Fragen</h2>
+
+<p>
+  Fragen und Antworten aus der Datenbank
+  approved_answers
+</p>
+
+
+<!-- =====================================
+     SUCHFELD
+===================================== -->
+
+<h3>Fragen suchen</h3>
+
+<input
+  type="search"
+  id="suche"
+  placeholder="Suchbegriff eingeben ..."
+  autocomplete="off"
+>
+
+
+<!-- =====================================
+     FRAGENLISTE
+===================================== -->
+
+<h3>Fragen auswählen</h3>
+
+<div id="fragenListe">
+  Fragen werden geladen ...
+</div>
+
+
+<!-- =====================================
+     ANTWORTBEREICH
+===================================== -->
+
+<div id="antwortBereich">
+
+  <h3>Antwort</h3>
+
+  <div id="antwort">
+    Bitte eine Frage auswählen.
+  </div>
+
+</div>
+
+
+<!-- =====================================
+     AKTUALISIEREN
+===================================== -->
+
+<button
+  class="aktualisieren"
+  onclick="fragenLaden()"
+>
+  Fragen aktualisieren
+</button>
+
+
+<!-- =====================================
+     STATUS
+===================================== -->
+
+<p id="status">
+  Bereit.
+</p>
+
+
+<script>
+
+/* ==========================================
+   1. CLOUDFLARE WORKER ADRESSE
+========================================== */
+
+// Adresse deines bestehenden Workers
+
+const WORKER_URL =
+  "https://schueler-lern-bot.hssw.workers.dev";
+
+
+/* ==========================================
+   2. DATENSPEICHER
+========================================== */
+
+// Hier speichern wir alle geladenen Datensätze.
+
+let alleFragen = [];
+
+
+/* ==========================================
+   3. DATENBANKABFRAGE
+========================================== */
+
+async function fragenLaden() {
+
+  const liste =
+    document.getElementById("fragenListe");
+
+  const status =
+    document.getElementById("status");
+
+  const antwort =
+    document.getElementById("antwort");
+
+  // Alte Inhalte entfernen
+
+  liste.innerHTML = "";
+
+  antwort.textContent =
+    "Bitte eine Frage auswählen.";
+
+  status.textContent =
+    "Datenbank wird geladen ...";
+
+  try {
+
+    // Daten über Cloudflare Worker abrufen
+
+    const response = await fetch(
+      WORKER_URL + "/fragen"
+    );
+
+    // HTTP-Fehler erkennen
+
+    if (!response.ok) {
+
+      throw new Error(
+        "HTTP-Fehler " + response.status
+      );
+
+    }
+
+    // JSON-Daten einlesen
+
+    alleFragen = await response.json();
+
+    // Prüfen, ob eine Liste zurückgegeben wurde
+
+    if (!Array.isArray(alleFragen)) {
+
+      throw new Error(
+        "Die Datenbank hat keine gültige Fragenliste geliefert."
+      );
+
+    }
+
+    // Alphabetisch sortieren
+
+    alleFragen.sort(function(a, b) {
+
+      return (a.question || "").localeCompare(
+        b.question || "",
+        "de",
+        { sensitivity: "base" }
+      );
+
+    });
+
+    // Suchfeld zurücksetzen
+
+    document.getElementById("suche").value = "";
+
+    // Fragen anzeigen
+
+    fragenFiltern();
+
+    // Status aktualisieren
+
+    status.textContent =
+      alleFragen.length +
+      " Fragen erfolgreich geladen.";
+
+  }
+
+  catch (error) {
+
+    // Fehlermeldung anzeigen
+
+    liste.textContent =
+      "Die Fragen konnten nicht geladen werden.";
+
+    status.textContent =
+      "Fehler: " + error.message;
+
+    console.error(
+      "Fehler beim Laden:",
+      error
+    );
+
+  }
+
+}
+
+
+/* ==========================================
+   4. SUCHFUNKTION UND FRAGENLISTE
+========================================== */
+
+function fragenFiltern() {
+
+  const suchfeld =
+    document.getElementById("suche");
+
+  const liste =
+    document.getElementById("fragenListe");
+
+  const status =
+    document.getElementById("status");
+
+  // Suchbegriff übernehmen
+
+  const suchbegriff =
+    suchfeld.value.toLocaleLowerCase("de");
+
+  // Alte Fragen entfernen
+
+  liste.innerHTML = "";
+
+  // Antwort zurücksetzen
+
+  document.getElementById("antwort").textContent =
+    "Bitte eine Frage auswählen.";
+
+  // Passende Fragen herausfiltern
+
+  const treffer = alleFragen.filter(function(eintrag) {
+
+    const frage =
+      (eintrag.question || "").toLocaleLowerCase("de");
+
+    return frage.includes(suchbegriff);
+
+  });
+
+  // Jede Frage einzeln anzeigen
+
+  treffer.forEach(function(eintrag) {
+
+    // Schaltfläche erzeugen
+
+    const button =
+      document.createElement("button");
+
+    button.type = "button";
+
+    button.className = "frageEintrag";
+
+    // Vollständige Frage einsetzen
+
+    button.textContent = eintrag.question;
+
+    // Beim Anklicken Antwort anzeigen
+
+    button.addEventListener("click", function() {
+
+      // Bisherige Markierungen entfernen
+
+      document.querySelectorAll(".frageEintrag")
+        .forEach(function(element) {
+
+          element.classList.remove("aktiv");
+
+        });
+
+      // Ausgewählte Frage markieren
+
+      button.classList.add("aktiv");
+
+      // Antwort anzeigen
+
+      antwortAnzeigen(eintrag);
+
+    });
+
+    // Frage zur Liste hinzufügen
+
+    liste.appendChild(button);
+
+  });
+
+  // Anzahl der Treffer anzeigen
+
+  status.textContent =
+    treffer.length +
+    " von " +
+    alleFragen.length +
+    " Fragen angezeigt.";
+
+  // Falls keine Frage gefunden wurde
+
+  if (treffer.length === 0) {
+
+    liste.textContent =
+      "Keine passende Frage gefunden.";
+
+  }
+
+}
+
+
+/* ==========================================
+   5. ANTWORT ANZEIGEN
+========================================== */
+
+function antwortAnzeigen(datensatz) {
+
+  const antwort =
+    document.getElementById("antwort");
+
+  // Zugehörige Antwort vollständig anzeigen
+
+  antwort.textContent =
+    datensatz.answer ||
+    "Keine Antwort hinterlegt.";
+
+}
+
+
+/* ==========================================
+   6. SUCHFELD AKTIVIEREN
+========================================== */
+
+// Bei jeder Eingabe sofort filtern
+
+document.getElementById("suche")
+  .addEventListener("input", fragenFiltern);
+
+
+/* ==========================================
+   7. AUTOMATISCHER START
+========================================== */
+
+// Beim Öffnen der HTML-Datei Daten laden
+
+window.addEventListener(
+  "DOMContentLoaded",
+  fragenLaden
+);
+
+</script>
+
+</body>
+</html>
