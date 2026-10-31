@@ -1,0 +1,187 @@
+
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+  <meta charset="UTF-8">
+
+  <!-- Darstellung auf Smartphones optimieren -->
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+  <title>Lern-Bot – Fragen</title>
+
+  <style>
+
+    /* Grundeinstellungen der gesamten Seite */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background: #f4f4f4;
+      color: #222;
+    }
+
+    /* Überschrift */
+    h2 {
+      color: #234b70;
+    }
+
+    /* Listenfeld mit den Fragen */
+    select {
+      width: 100%;
+      min-height: 350px;
+      padding: 10px;
+      font-size: 16px;
+      background: white;
+      border: 1px solid #999;
+      border-radius: 6px;
+    }
+
+    /* Jede einzelne Frage */
+    option {
+      padding: 8px;
+      white-space: normal;
+    }
+
+    /* Schaltfläche */
+    button {
+      margin-top: 12px;
+      padding: 12px 20px;
+      font-size: 16px;
+      background: #245b88;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    /* Statusanzeige */
+    #status {
+      margin-top: 12px;
+      font-size: 14px;
+    }
+
+  </style>
+</head>
+
+<body>
+
+  <h2>Freigegebene Fragen</h2>
+
+  <p>
+    Alle Fragen aus der Datenbank:
+  </p>
+
+  <!--
+    LISTENFELD
+
+    size="15" bedeutet:
+    15 Fragen werden gleichzeitig angezeigt.
+
+    Bei mehr Fragen kann man scrollen.
+  -->
+
+  <select id="fragenListe" size="10">
+    <option>Fragen werden geladen ...</option>
+  </select>
+
+  <!-- Schaltfläche zum erneuten Laden -->
+  <br>
+
+  <button onclick="fragenLaden()">
+    Fragen neu laden
+  </button>
+
+  <!-- Hier erscheinen Statusmeldungen -->
+  <p id="status"></p>
+
+
+  <script>
+
+    // ========================================
+    // FUNKTION: FRAGEN AUS CLOUDFLARE LADEN
+    // ========================================
+
+    async function fragenLaden() {
+
+      // Zugriff auf das Listenfeld
+      const liste = document.getElementById("fragenListe");
+
+      // Zugriff auf die Statusanzeige
+      const status = document.getElementById("status");
+
+      // Alten Inhalt entfernen
+      liste.innerHTML = "";
+
+      status.textContent = "Datenbank wird abgefragt ...";
+
+      try {
+
+        // Fragen über den Cloudflare Worker abrufen
+        const antwort = await fetch("/fragen");
+
+        // Prüfen, ob die Abfrage erfolgreich war
+        if (!antwort.ok) {
+          throw new Error("Fehler beim Datenbankzugriff: " +
+                          antwort.status);
+        }
+
+        // JSON-Daten in ein JavaScript-Array umwandeln
+        const fragen = await antwort.json();
+
+        // Prüfen, ob Fragen vorhanden sind
+        if (fragen.length === 0) {
+
+          liste.add(new Option("Keine Fragen vorhanden", ""));
+
+          status.textContent = "Keine Fragen gefunden.";
+
+          return;
+        }
+
+        // Alle Fragen einzeln in das Listenfeld eintragen
+        fragen.forEach(function(frage) {
+
+          // Neuen Listeneintrag erzeugen
+          const option = document.createElement("option");
+
+          // Den Fragetext eintragen
+          option.textContent = frage;
+
+          // Eintrag dem Listenfeld hinzufügen
+          liste.appendChild(option);
+
+        });
+
+        // Anzahl der geladenen Fragen anzeigen
+        status.textContent =
+          fragen.length + " Fragen erfolgreich geladen.";
+
+      }
+
+      catch (fehler) {
+
+        // Fehlermeldung anzeigen
+        status.textContent =
+          "Fehler: " + fehler.message;
+
+        liste.add(
+          new Option("Fragen konnten nicht geladen werden.", "")
+        );
+
+        console.error(fehler);
+      }
+
+    }
+
+
+    // ========================================
+    // BEIM ÖFFNEN DER SEITE AUTOMATISCH LADEN
+    // ========================================
+
+    window.addEventListener("DOMContentLoaded", fragenLaden);
+
+  </script>
+
+</body>
+</html>
